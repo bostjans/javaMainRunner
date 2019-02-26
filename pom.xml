@@ -1,0 +1,100 @@
+<project>
+    <!-- model version is always 4.0.0 for Maven 2.x POMs -->
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- project coordinates .. -->
+
+    <groupId>com.stupica.base</groupId>
+    <artifactId>mainRunner</artifactId>
+    <version>1.2.1</version>
+    <packaging>jar</packaging>
+    <name>mainRunner</name>
+    <organization>
+        <name>developer.stupica.com</name>
+        <url>http://www.stupica.com</url>
+    </organization>
+    <url>http://developer.stupica.com/maven/</url>
+
+    <!-- library dependencies -->
+
+    <dependencies>
+        <dependency>
+            <groupId>net.sf</groupId>
+            <artifactId>jargs</artifactId>
+            <version>1.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.stupica.base</groupId>
+            <artifactId>globalVar</artifactId>
+            <version>1.4.2</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.1.1</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Implementation-Version>${project.version}</Implementation-Version>
+                            <Specification-Version>${project.version}</Specification-Version>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ftp</artifactId>
+                <version>3.3.1</version>
+            </extension>
+        </extensions>
+    </build>
+
+    <repositories>
+        <repository>
+            <id>jboss-3rd-party-releases</id>
+            <url>https://repository.jboss.org/nexus/content/repositories/thirdparty-releases/</url>
+        </repository>
+    </repositories>
+
+    <distributionManagement>
+        <!--
+        <repository>
+            <id>bDevRelease</id>
+            <url>ftp://developer.stupica.com/maven2</url>
+        </repository>
+        -->
+        <repository>
+            <id>bDevRelease2</id>
+            <url>ftp://developer.dev404.net/maven2</url>
+        </repository>
+    </distributionManagement>
+
+    <developers>
+        <developer>
+            <id>bostjanst</id>
+            <name>Bostjan Stupica</name>
+            <email>bostjan@stupica.com</email>
+            <url>http://www.stupica.com</url>
+            <organization>Developer404</organization>
+            <organizationUrl>http://www.stupica.com</organizationUrl>
+            <roles>
+                <role>architect</role>
+                <role>developer</role>
+                <role>admin</role>
+            </roles>
+            <timezone>Europe/Berlin</timezone>
+            <properties>
+                <picUrl>http://bostjan.dev404.net/about_me/myimg01.jpg</picUrl>
+            </properties>
+        </developer>
+    </developers>
+
+</project>
