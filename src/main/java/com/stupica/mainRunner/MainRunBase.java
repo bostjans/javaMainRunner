@@ -3,16 +3,17 @@ package com.stupica.mainRunner;
 
 import com.stupica.ConstGlobal;
 import com.stupica.GlobalVar;
+import com.stupica.core.UtilDate;
 import com.stupica.core.UtilString;
 
 import jargs.gnu.CmdLineParser;
 
 import java.io.*;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.net.URL;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.InvalidPropertiesFormatException;
-import java.util.Properties;
+import java.util.*;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
@@ -93,8 +94,20 @@ public class MainRunBase {
     public static String MANIFEST_KEY_IMPL_VERSION = "Implementation-Version";
     public static String MANIFEST_KEY_SPEC_VERSION = "Specification-Version";
 
+    /**
+     * Flag: should read configuration from file?
+     */
     public boolean bShouldReadConfig = true;
+    /**
+     * Flag: should read configuration from program arguments?
+     */
     public boolean bShouldReadArguments = true;
+    /**
+     * Flag: is program/process running in loops?
+     */
+    public boolean bIsRunInLoop = false;
+    protected long iMaxNumOfLoops = 0;
+    protected int  iPauseBetweenLoop = 1000 * 2;
 
     public String sJavaVersion = "/";
 
@@ -106,6 +119,12 @@ public class MainRunBase {
     protected CmdLineParser.Option obj_op_verbose;
 
     protected static Logger logger = Logger.getLogger(MainRunBase.class.getName());
+
+
+    // inner class
+    public class RefDataInteger {
+        public int  iCountData = 0;
+    }
 
 
     /**
@@ -195,7 +214,7 @@ public class MainRunBase {
         if (s == null)
             s = System.out;
         PrintStream out = new PrintStream(s);
-        out.println("--> DateTime: " + new Date());
+        out.println("\t--> DateTime: " + UtilDate.toUniversalString(new Date()));
         System.getProperties().list(out);
     }
 
@@ -593,7 +612,6 @@ public class MainRunBase {
                 }
             }
         }
-
         return iResult;
     }
 
@@ -603,7 +621,7 @@ public class MainRunBase {
      * @param s message
      */
     protected void msgInfo(String s) {
-        if (s != null){
+        if (s != null) {
             System.out.println(TERM_BOLD + "INFO:    " + TERM_RESET + s);
         }
     }
@@ -639,6 +657,7 @@ public class MainRunBase {
     protected void printUsage() {
         System.err.println("Usage: prog [-h,--help]");
         System.err.println("            [-q,--quiet]");
+        System.err.println("            [-v,--verbose]");
         System.err.println("            [..]");
     }
 
@@ -651,7 +670,23 @@ public class MainRunBase {
      * @return int	1 = AllOK;
      */
     public int run() {
-        return ConstGlobal.RETURN_OK;
+        int         iResult;
+        String      sTemp;
+
+        // Initialization
+        iResult = ConstGlobal.RETURN_SUCCESS;
+
+        if (bIsRunInLoop) {
+            // Run ..
+            iResult = runInLoop();
+            // Error
+            if (iResult != ConstGlobal.RETURN_OK) {
+                sTemp = "run(): Error at runInLoop() operation!";
+                logger.severe(sTemp);
+                msgErr(sTemp);
+            }
+        }
+        return iResult;
     }
 
     /**
@@ -673,6 +708,105 @@ public class MainRunBase {
      * @return int	1 = AllOK;
      */
     protected int runAfter() {
+        return ConstGlobal.RETURN_OK;
+    }
+
+
+    /**
+     * Method: runInLoop
+     *
+     * Run_in_Loop ..
+     *
+     * @return int	1 = AllOK;
+     */
+    protected int runInLoop() {
+        // Local variables
+        int         iResult;
+        //
+        long        iCountLoop = 0L;
+        long        iCountData = 0L;
+        Date        dtStart;
+        Date        dtStartLoop;
+        Date        dtStop;
+        RefDataInteger objRefCountData;
+
+        // Initialization
+        iResult = ConstGlobal.RETURN_SUCCESS;
+        dtStart = new Date();
+        //dtStartLoop = new Date();
+        objRefCountData = new RefDataInteger();
+
+        // Process data ..
+        //
+        // Check previous step
+        if (iResult == ConstGlobal.RETURN_OK) {
+            do {
+                int     iResultTemp;
+                String  sTemp;
+
+                dtStartLoop = new Date();
+
+                // Check previous step
+                if (iResult == ConstGlobal.RETURN_OK) {
+                    // Run ..
+                    iResultTemp = runLoopCycle(objRefCountData);
+                    // Error
+                    if (iResultTemp != ConstGlobal.RETURN_OK) {
+                        sTemp = "runInLoop(): Error at runLoopCycle() operation!";
+                        logger.severe(sTemp);
+                        msgErr(sTemp);
+                        iResult = iResultTemp;
+                    }
+                }
+                iCountData = objRefCountData.iCountData;
+
+                // Check previous step
+                if (iResult == ConstGlobal.RETURN_OK) {
+                    if (iMaxNumOfLoops != 1L) {
+                        try { // Pause for ? second(s)
+                            Date    dtStopLoop = new Date();
+
+                            System.out.println("runInLoop(): Sleep .."
+                                    + " -> Count loop(s): " + String.format("%05d", iCountLoop)
+                                    + "\tTime: " + UtilDate.toUniversalString(dtStopLoop)
+                                    + "\tTimeElapse(ms): " + String.format("%05d", dtStopLoop.getTime() - dtStartLoop.getTime()) );
+                            Thread.sleep(iPauseBetweenLoop);
+                        } catch (Exception ex) {
+                            iResult = ConstGlobal.RETURN_ENDOFDATA;
+                            logger.severe("runInLoop: Interrupt exception!!"
+                                    + " Msg.: " + ex.getMessage());
+                        }
+                    }
+                }
+
+                iCountLoop++;
+
+                if (iMaxNumOfLoops > 0) {
+                    if (iMaxNumOfLoops <= (iCountLoop - 0)) {
+                        logger.info("runInLoop(): Maximum number of loops reached: " + iMaxNumOfLoops);
+                        break;
+                    }
+                }
+            } while (iResult == ConstGlobal.RETURN_OK);
+        }
+
+        dtStop = new Date();
+        logger.info("runInLoop(): Processing done."
+                + "\n\tData num.: " + iCountData
+                + "\tLoop num.: " + iCountLoop
+                + "\t\tDuration(ms): " + (dtStop.getTime() - dtStart.getTime()));
+        return iResult;
+    }
+
+    /**
+     * Method: runLoopCycle
+     *
+     * Run_Loop_cycle ..
+     *
+     * @return int	1 = AllOK;
+     */
+    protected int runLoopCycle(RefDataInteger aobjRefCountData) {
+        aobjRefCountData.iCountData = 0;
         return ConstGlobal.RETURN_OK;
     }
 }
