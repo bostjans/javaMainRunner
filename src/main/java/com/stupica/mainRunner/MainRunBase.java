@@ -9,9 +9,6 @@ import com.stupica.core.UtilString;
 import jargs.gnu.CmdLineParser;
 
 import java.io.*;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
-import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.*;
 import java.util.jar.Attributes;
@@ -106,7 +103,7 @@ public class MainRunBase {
      * Flag: is program/process running in loops?
      */
     public boolean bIsRunInLoop = false;
-    protected long iMaxNumOfLoops = 0;
+    protected long iMaxNumOfLoops = 1;
     protected int  iPauseBetweenLoop = 1000 * 2;
 
     public String sJavaVersion = "/";
@@ -677,13 +674,33 @@ public class MainRunBase {
         iResult = ConstGlobal.RETURN_SUCCESS;
 
         if (bIsRunInLoop) {
-            // Run ..
-            iResult = runInLoop();
+            iResult = runLoopBefore();
             // Error
             if (iResult != ConstGlobal.RETURN_OK) {
-                sTemp = "run(): Error at runInLoop() operation!";
+                sTemp = "run(): Error at runLoopBefore() operation!";
                 logger.severe(sTemp);
                 msgErr(sTemp);
+            }
+            // Check previous step
+            if (iResult == ConstGlobal.RETURN_OK) {
+                // Run ..
+                iResult = runInLoop();
+                // Error
+                if (iResult != ConstGlobal.RETURN_OK) {
+                    sTemp = "run(): Error at runInLoop() operation!";
+                    logger.severe(sTemp);
+                    msgErr(sTemp);
+                }
+            }
+            // Check previous step
+            if (iResult == ConstGlobal.RETURN_OK) {
+                iResult = runLoopAfter();
+                // Error
+                if (iResult != ConstGlobal.RETURN_OK) {
+                    sTemp = "run(): Error at runLoopAfter() operation!";
+                    logger.severe(sTemp);
+                    msgErr(sTemp);
+                }
             }
         }
         return iResult;
@@ -760,6 +777,14 @@ public class MainRunBase {
                 }
                 iCountData = objRefCountData.iCountData;
 
+                iCountLoop++;
+                if (iMaxNumOfLoops > 0) {
+                    if (iMaxNumOfLoops <= (iCountLoop - 0)) {
+                        logger.info("runInLoop(): Maximum number of loops reached: " + iMaxNumOfLoops);
+                        break;
+                    }
+                }
+
                 // Check previous step
                 if (iResult == ConstGlobal.RETURN_OK) {
                     if (iMaxNumOfLoops != 1L) {
@@ -778,15 +803,6 @@ public class MainRunBase {
                         }
                     }
                 }
-
-                iCountLoop++;
-
-                if (iMaxNumOfLoops > 0) {
-                    if (iMaxNumOfLoops <= (iCountLoop - 0)) {
-                        logger.info("runInLoop(): Maximum number of loops reached: " + iMaxNumOfLoops);
-                        break;
-                    }
-                }
             } while (iResult == ConstGlobal.RETURN_OK);
         }
 
@@ -797,6 +813,29 @@ public class MainRunBase {
                 + "\t\tDuration(ms): " + (dtStop.getTime() - dtStart.getTime()));
         return iResult;
     }
+
+    /**
+     * Method: runLoopBefore
+     *
+     * Run_Loop_cycle_before ..
+     *
+     * @return int	1 = AllOK;
+     */
+    protected int runLoopBefore() {
+        return ConstGlobal.RETURN_OK;
+    }
+
+    /**
+     * Method: runLoopAfter
+     *
+     * Run_Loop_cycle_before ..
+     *
+     * @return int	1 = AllOK;
+     */
+    protected int runLoopAfter() {
+        return ConstGlobal.RETURN_OK;
+    }
+
 
     /**
      * Method: runLoopCycle
