@@ -789,12 +789,19 @@ public class MainRunBase {
                 if (iResult == ConstGlobal.RETURN_OK) {
                     if (iMaxNumOfLoops != 1L) {
                         try { // Pause for ? second(s)
-                            Date    dtStopLoop = new Date();
+                            StringBuilder   sSleep = new StringBuilder();
+                            Date            dtStopLoop = new Date();
 
-                            System.out.println("runInLoop(): Sleep .."
-                                    + " -> Count loop(s): " + String.format("%05d", iCountLoop)
-                                    + "\tTime: " + UtilDate.toUniversalString(dtStopLoop)
-                                    + "\tTimeElapse(ms): " + String.format("%05d", dtStopLoop.getTime() - dtStartLoop.getTime()) );
+                            if (UtilString.isEmptyTrim(GlobalVar.getInstance().sProgName)) {
+                                sSleep.append("runInLoop()");
+                            } else {
+                                sSleep.append(String.format("%15.15s", GlobalVar.getInstance().sProgName));
+                            }
+                            sSleep.append(": Sleep ..");
+                            sSleep.append(" -> #Loop: ").append(String.format("%05d", iCountLoop));
+                            sSleep.append("\tTime: ").append(UtilDate.toUniversalString(dtStopLoop));
+                            sSleep.append("\tElapse(ms): ").append(String.format("%05d", dtStopLoop.getTime() - dtStartLoop.getTime()));
+                            System.out.println(sSleep.toString());
                             Thread.sleep(iPauseBetweenLoop);
                         } catch (Exception ex) {
                             iResult = ConstGlobal.RETURN_ENDOFDATA;
@@ -809,7 +816,7 @@ public class MainRunBase {
         dtStop = new Date();
         logger.info("runInLoop(): Processing done."
                 + "\n\tData num.: " + iCountData
-                + "\tLoop num.: " + iCountLoop
+                + "\tLoop#: " + iCountLoop
                 + "\t\tDuration(ms): " + (dtStop.getTime() - dtStart.getTime()));
         return iResult;
     }
