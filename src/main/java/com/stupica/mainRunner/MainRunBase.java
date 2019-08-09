@@ -799,7 +799,7 @@ public class MainRunBase {
                             if (UtilString.isEmptyTrim(GlobalVar.getInstance().sProgName)) {
                                 sSleep.append("runInLoop()");
                             } else {
-                                sSleep.append(String.format("%15.15s", GlobalVar.getInstance().sProgName));
+                                sSleep.append(String.format("%22.22s", GlobalVar.getInstance().sProgName));
                             }
                             sSleep.append(": Sleep ..");
                             sSleep.append(" -> #Loop: ").append(String.format("%05d", objRefCountData.iCountLoop));
