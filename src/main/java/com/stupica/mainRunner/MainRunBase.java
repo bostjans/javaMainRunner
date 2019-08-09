@@ -120,6 +120,7 @@ public class MainRunBase {
 
     // inner class
     public class RefDataInteger {
+        public long iCountLoop = 0L;
         public int  iCountData = 0;
     }
 
@@ -740,8 +741,8 @@ public class MainRunBase {
         // Local variables
         int         iResult;
         //
-        long        iCountLoop = 0L;
-        long        iCountData = 0L;
+        //long        iCountLoop = 0L;
+        long        iCountDataAll = 0L;
         Date        dtStart;
         Date        dtStartLoop;
         Date        dtStop;
@@ -763,6 +764,9 @@ public class MainRunBase {
 
                 dtStartLoop = new Date();
 
+                if (GlobalVar.bIsModeVerbose) {
+                    logger.info("runInLoop(): =-> Loop count: " + objRefCountData.iCountLoop + " ---===");
+                }
                 // Check previous step
                 if (iResult == ConstGlobal.RETURN_OK) {
                     // Run ..
@@ -775,11 +779,11 @@ public class MainRunBase {
                         iResult = iResultTemp;
                     }
                 }
-                iCountData = objRefCountData.iCountData;
+                iCountDataAll += objRefCountData.iCountData;
 
-                iCountLoop++;
+                objRefCountData.iCountLoop++;
                 if (iMaxNumOfLoops > 0) {
-                    if (iMaxNumOfLoops <= (iCountLoop - 0)) {
+                    if (iMaxNumOfLoops <= (objRefCountData.iCountLoop - 0)) {
                         logger.info("runInLoop(): Maximum number of loops reached: " + iMaxNumOfLoops);
                         break;
                     }
@@ -798,7 +802,7 @@ public class MainRunBase {
                                 sSleep.append(String.format("%15.15s", GlobalVar.getInstance().sProgName));
                             }
                             sSleep.append(": Sleep ..");
-                            sSleep.append(" -> #Loop: ").append(String.format("%05d", iCountLoop));
+                            sSleep.append(" -> #Loop: ").append(String.format("%05d", objRefCountData.iCountLoop));
                             sSleep.append("\tTime: ").append(UtilDate.toUniversalString(dtStopLoop));
                             sSleep.append("\tElapse(ms): ").append(String.format("%05d", dtStopLoop.getTime() - dtStartLoop.getTime()));
                             System.out.println(sSleep.toString());
@@ -815,8 +819,8 @@ public class MainRunBase {
 
         dtStop = new Date();
         logger.info("runInLoop(): Processing done."
-                + "\n\tData num.: " + iCountData
-                + "\tLoop#: " + iCountLoop
+                + "\n\tData num.: " + objRefCountData.iCountData + "/" + iCountDataAll
+                + "\tLoop#: " + objRefCountData.iCountLoop
                 + "\t\tDuration(ms): " + (dtStop.getTime() - dtStart.getTime()));
         return iResult;
     }
