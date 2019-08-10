@@ -100,6 +100,10 @@ public class MainRunBase {
      */
     public boolean bShouldReadArguments = true;
     /**
+     * Flag: should enable program Shutdown_Hook (for CTRL+C for example)?
+     */
+    public boolean bShouldEnableShutdownHook = false;
+    /**
      * Flag: is program/process running in loops?
      */
     public boolean bIsRunInLoop = false;
@@ -569,6 +573,26 @@ public class MainRunBase {
             }
         }
 
+        // Enable ShutdownHook
+        if (bShouldEnableShutdownHook) {
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                public void run() {
+                    int     iResultTemp;
+                    String  sTemp;
+
+                    iResultTemp = runShutdownHook();
+                    // Error
+                    if (iResultTemp != ConstGlobal.RETURN_OK) {
+                        sTemp = "invokeApp(): Error at runShutdownHook() operation!";
+                        logger.severe(sTemp);
+                        msgWarn(sTemp);
+                        //iResult = ConstGlobal.PROCESS_EXIT_FAILURE;
+                    }
+                    msgInfo("invokeApp(Thread): Shouting down (final) ..");
+                }
+            });
+        }
+
         // Invoke Run()
         {
             int     iResultTemp;
@@ -726,6 +750,19 @@ public class MainRunBase {
      * @return int	1 = AllOK;
      */
     protected int runAfter() {
+        return ConstGlobal.RETURN_OK;
+    }
+
+
+    /**
+     * Method: runShutdownHook
+     *
+     * Run/Initiate Shutdown procedure.
+     *
+     * @return int	1 = AllOK;
+     */
+    protected int runShutdownHook() {
+        msgInfo("runShutdownHook(): Shouting down initiated ..");
         return ConstGlobal.RETURN_OK;
     }
 
