@@ -90,6 +90,7 @@ public class MainRunBase {
 
     public static String MANIFEST_KEY_IMPL_VERSION = "Implementation-Version";
     public static String MANIFEST_KEY_SPEC_VERSION = "Specification-Version";
+    public static String MANIFEST_KEY_CAPSULE_VER = "Embedded-Artifacts";
 
     /**
      * Flag: should read configuration from file?
@@ -102,7 +103,9 @@ public class MainRunBase {
     /**
      * Flag: should enable program Shutdown_Hook (for CTRL+C for example)?
      */
-    public boolean bShouldEnableShutdownHook = false;
+    protected boolean bShouldEnableShutdownHook = false;
+    public boolean bIsShutdownInitiated = false;
+    protected boolean bIsShutdownReady2Stop = false;
     /**
      * Flag: is program/process running in loops?
      */
@@ -371,17 +374,22 @@ public class MainRunBase {
             if (atts != null) {
                 sTemp = atts.getValue(MANIFEST_KEY_IMPL_VERSION);
                 if (UtilString.isEmpty(sTemp)) sTemp = atts.getValue(MANIFEST_KEY_SPEC_VERSION);
+                if (UtilString.isEmpty(sTemp)) sTemp = atts.getValue(MANIFEST_KEY_CAPSULE_VER);
             }
         }
         if (UtilString.isEmpty(sTemp)) sTemp = "/";
         //sTemp = "2.0.0";
         //System.out.println("\tVersion text extracted: " + sTemp);
+        if (sTemp.contains(":")) {
+            String[] arrVersion = sTemp.split(":");
+            sTemp = arrVersion[arrVersion.length - 1];
+        }
         if (sTemp.contains(".")) {
             String[] arrVersion = sTemp.split("\\.");
             //System.out.println("\tVersion num extracted: " + arrVersion.length);
             GlobalVar.getInstance().sVersionMax = arrVersion[0];
-            if (arrVersion.length > 0) GlobalVar.getInstance().sVersionMin = arrVersion[1];
-            if (arrVersion.length > 1) GlobalVar.getInstance().sVersionPatch = arrVersion[2];
+            if (arrVersion.length > 0) GlobalVar.getInstance().sVersionMin = arrVersion[1].trim();
+            if (arrVersion.length > 1) GlobalVar.getInstance().sVersionPatch = arrVersion[2].trim();
         } else {
             GlobalVar.getInstance().sVersionMax = sTemp;
             GlobalVar.getInstance().sVersionMin = "0";
@@ -762,7 +770,9 @@ public class MainRunBase {
      * @return int	1 = AllOK;
      */
     protected int runShutdownHook() {
+        bIsShutdownInitiated = true;
         msgInfo("runShutdownHook(): Shouting down initiated ..");
+        //bIsShutdownReady2Stop = true;
         return ConstGlobal.RETURN_OK;
     }
 
