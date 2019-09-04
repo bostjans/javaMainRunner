@@ -800,6 +800,9 @@ public class MainRunBase {
         dtStart = new Date();
         //dtStartLoop = new Date();
         objRefCountData = new RefDataInteger();
+        if (GlobalVar.bIsModeVerbose) {
+            logger.info("runInLoop(): =-> Start running in Loop - iMaxNumOfLoops: " + iMaxNumOfLoops + " --==");
+        }
 
         // Process data ..
         //
