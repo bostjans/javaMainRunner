@@ -111,7 +111,7 @@ public class MainRunBase {
      */
     public boolean bIsRunInLoop = false;
     protected long iMaxNumOfLoops = 1;
-    protected int  iPauseBetweenLoop = 1000 * 2;
+    protected int  iPauseBetweenLoop = 1000 * 2;    // 2 sec .. is default;
 
     public String sJavaVersion = "/";
 
@@ -842,25 +842,27 @@ public class MainRunBase {
                 // Check previous step
                 if (iResult == ConstGlobal.RETURN_OK) {
                     if (iMaxNumOfLoops != 1L) {
-                        try { // Pause for ? second(s)
-                            StringBuilder   sSleep = new StringBuilder();
-                            Date            dtStopLoop = new Date();
+                        StringBuilder   sSleep = new StringBuilder();
+                        Date            dtStopLoop = new Date();
 
-                            if (UtilString.isEmptyTrim(GlobalVar.getInstance().sProgName)) {
-                                sSleep.append("runInLoop()");
-                            } else {
-                                sSleep.append(String.format("%22.22s", GlobalVar.getInstance().sProgName));
+                        if (UtilString.isEmptyTrim(GlobalVar.getInstance().sProgName)) {
+                            sSleep.append("runInLoop()");
+                        } else {
+                            sSleep.append(String.format("%22.22s", GlobalVar.getInstance().sProgName));
+                        }
+                        sSleep.append(": Sleep ..");
+                        sSleep.append(" -> #Loop: ").append(String.format("%05d", objRefCountData.iCountLoop));
+                        sSleep.append("\tTime: ").append(UtilDate.toUniversalString(dtStopLoop));
+                        sSleep.append("\tElapse(ms): ").append(String.format("%05d", dtStopLoop.getTime() - dtStartLoop.getTime()));
+                        System.out.println(sSleep.toString());
+                        if (iPauseBetweenLoop != 0) {
+                            try { // Pause for ? second(s)
+                                Thread.sleep(iPauseBetweenLoop);
+                            } catch (Exception ex) {
+                                iResult = ConstGlobal.RETURN_ENDOFDATA;
+                                logger.severe("runInLoop: Interrupt exception!!"
+                                        + " Msg.: " + ex.getMessage());
                             }
-                            sSleep.append(": Sleep ..");
-                            sSleep.append(" -> #Loop: ").append(String.format("%05d", objRefCountData.iCountLoop));
-                            sSleep.append("\tTime: ").append(UtilDate.toUniversalString(dtStopLoop));
-                            sSleep.append("\tElapse(ms): ").append(String.format("%05d", dtStopLoop.getTime() - dtStartLoop.getTime()));
-                            System.out.println(sSleep.toString());
-                            Thread.sleep(iPauseBetweenLoop);
-                        } catch (Exception ex) {
-                            iResult = ConstGlobal.RETURN_ENDOFDATA;
-                            logger.severe("runInLoop: Interrupt exception!!"
-                                    + " Msg.: " + ex.getMessage());
                         }
                     }
                 }
