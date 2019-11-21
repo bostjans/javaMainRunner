@@ -112,6 +112,16 @@ public class MainRunBase {
     public boolean bIsRunInLoop = false;
     protected long iMaxNumOfLoops = 1;
     protected int  iPauseBetweenLoop = 1000 * 2;    // 2 sec .. is default;
+    /**
+     * Flag: should write loop information to StdOut?
+     * Sample:
+     *    programName: Sleep .. -> #Loop: 02456        Time: 2019-11-21_23:49:20       Elapse(ms): 02648
+     */
+    protected boolean bShouldWriteLoopInfo2stdOut = true;
+    /**
+     * Flag: should write loop information to log?
+     */
+    protected boolean bShouldWriteLoopInfo2log = false;
 
     public String sJavaVersion = "/";
 
@@ -854,7 +864,10 @@ public class MainRunBase {
                         sSleep.append(" -> #Loop: ").append(String.format("%05d", objRefCountData.iCountLoop));
                         sSleep.append("\tTime: ").append(UtilDate.toUniversalString(dtStopLoop));
                         sSleep.append("\tElapse(ms): ").append(String.format("%05d", dtStopLoop.getTime() - dtStartLoop.getTime()));
-                        System.out.println(sSleep.toString());
+                        if (bShouldWriteLoopInfo2stdOut)
+                            System.out.println(sSleep.toString());
+                        if (bShouldWriteLoopInfo2log)
+                            logger.info("runInLoop(): " + sSleep.toString());
                         if (iPauseBetweenLoop != 0) {
                             try { // Pause for ? second(s)
                                 Thread.sleep(iPauseBetweenLoop);
