@@ -9,6 +9,7 @@ import com.stupica.core.UtilString;
 import jargs.gnu.CmdLineParser;
 
 import java.io.*;
+import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.util.*;
 import java.util.jar.Attributes;
@@ -248,6 +249,49 @@ public class MainRunBase {
 
 
     /**
+     * Reference:
+     * -> https://stackoverflow.com/questions/35842/how-can-a-java-program-get-its-own-process-id
+     *
+     * @return String
+     */
+    protected String getProcessPID() {
+        String  sPID = "-1";
+
+        // Note: may fail in some JVM implementations
+        // therefore fallback has to be provided
+        //
+        // something like '<pid>@<hostname>', at least in SUN / Oracle JVMs
+        final String jvmName = ManagementFactory.getRuntimeMXBean().getName();
+        final int index = jvmName.indexOf('@');
+
+        //if (index < 1) {
+            // part before '@' empty (index = 0) / '@' not found (index = -1)
+        //}
+        if (index > 0) {
+            try {
+                sPID = Long.toString(Long.parseLong(jvmName.substring(0, index)));
+            } catch (NumberFormatException e) {
+                // ignore
+                msgErr("PID could not be retrieved! Msg.: " + e.getMessage());
+            }
+        }
+        return sPID;
+    }
+
+    protected String getProcessHostMX() {
+        String  sHostMX = "/";
+
+        // something like '<pid>@<hostname>', at least in SUN / Oracle JVMs
+        final String jvmName = ManagementFactory.getRuntimeMXBean().getName();
+        final int index = jvmName.indexOf('@');
+
+        if (index > 0) sHostMX = jvmName.substring(index);
+        else sHostMX = jvmName;
+        return sHostMX;
+    }
+
+
+    /**
      * Method: readConfig
      *
      * Read ..
@@ -354,11 +398,6 @@ public class MainRunBase {
                         bIsDevEnv = true;
                         break;
                     }
-//                    if (       (objResource.toString().toLowerCase().contains("lenkotr"))
-//                            || (objResource.toString().toLowerCase().contains("stupica")) ) {
-//                        mf = new Manifest(objResource.openStream());
-//                        //break;
-//                    }
                     if (       (objResource.toString().toLowerCase().contains(GlobalVar.getInstance().sProgName.toLowerCase())) ) {
                         mf = new Manifest(objResource.openStream());
                         break;
@@ -451,8 +490,9 @@ public class MainRunBase {
 
         if (Boolean.TRUE.equals(obj_parser.getOptionValue(obj_op_verbose))) {
             GlobalVar.bIsModeVerbose = true;
-            //System.out.println("Java (runtime) version: " + sJavaVersion);
-            msgInfo("Java (runtime) version: " + sJavaVersion);
+            msgInfo("Java (runtime) version: " + sJavaVersion
+                    + "; PID: " + getProcessPID()
+                    + "; HostMX: " + getProcessHostMX());
             printSystemInfo();
         }
         if (Boolean.TRUE.equals(obj_parser.getOptionValue(obj_op_quiet))) {
