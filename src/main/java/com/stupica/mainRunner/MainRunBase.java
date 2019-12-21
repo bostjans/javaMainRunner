@@ -128,10 +128,17 @@ public class MainRunBase {
 
     protected Properties objPropSett = new Properties();
 
-    protected CmdLineParser obj_parser = null;
-    protected CmdLineParser.Option obj_op_help;
-    protected CmdLineParser.Option obj_op_quiet;
-    protected CmdLineParser.Option obj_op_verbose;
+    protected CmdLineParser         obj_parser = null;
+    protected CmdLineParser.Option  obj_op_help;
+    protected CmdLineParser.Option  obj_op_quiet;
+    protected CmdLineParser.Option  obj_op_verbose;
+
+    protected final String sDirPid01 = "/var/run";
+    protected final String sDirPid02 = "/var/tmp";
+    protected final String sDirPid03 = "/tmp";
+    protected String sDirPid = sDirPid01;
+    protected File objDirPid = null;
+    protected File objFilePid = null;
 
     protected static Logger logger = Logger.getLogger(MainRunBase.class.getName());
 
@@ -212,13 +219,91 @@ public class MainRunBase {
 
         // Check logger
         {
-            String sTemp = "mainStart(): Program is starting ..";
+            String sTemp = "mainStart(): Program (PID: " + getProcessPID() + ") is starting ..";
             if (logger != null) {
                 logger.info(sTemp);
             } else {
                 msgInfo(sTemp);
             }
         }
+
+        // Create PID (temp)file
+        {
+            String          sProgName;
+            StringBuilder   sMsg = new StringBuilder();
+
+            if (UtilString.isEmptyTrim(GlobalVar.getInstance().sProgName)) sProgName = getProcessPID();
+            else                                                           sProgName = GlobalVar.getInstance().sProgName;
+            objFilePid = createPidFile(sProgName, sDirPid, sMsg);
+            if (objFilePid == null) {
+                objFilePid = createPidFile(sProgName, sDirPid02, sMsg);
+            }
+            if (objFilePid == null) {
+                objFilePid = createPidFile(sProgName, System.getProperty("user.dir"), sMsg);
+            }
+            if (objFilePid == null) {
+                objFilePid = createPidFile(sProgName, null, sMsg);
+            }
+            if (objFilePid == null) {
+                msgErr(sMsg.toString());
+            } else {
+                objFilePid.deleteOnExit();
+                sMsg.delete(0, sMsg.length() - 1);
+                sMsg.append("(temp) Pid_file created. Program: ").append(sProgName);
+                sMsg.append(" = ").append(" PID: ").append(getProcessPID());
+                sMsg.append("\n\tPid_file: ").append(objFilePid.getAbsolutePath());
+                msgInfo(sMsg.toString());
+                logger.info(sMsg.toString());
+            }
+        }
+    }
+
+
+    /**
+     * Method: createPidFile
+     *
+     * ..
+     */
+    protected File createPidFile(String asProgName, String asDirPid, StringBuilder asMsg) {
+        File    objPidFile = null;
+
+        if (UtilString.isEmpty(asDirPid)) {
+            try {
+                objPidFile = File.createTempFile(asProgName + "-", ".pid");
+            } catch (Exception ex) {
+                if (asMsg.length() > 0) asMsg.append("\n\t");
+                asMsg.append("Failed to create (temp) Pid_file!! Program: ").append(asProgName);
+                asMsg.append(" => ").append("PID: ").append(getProcessPID());
+                asMsg.append("\n\tMsg.: ").append(ex.getMessage());
+                logger.severe(asMsg.toString());
+            }
+        } else {
+            objDirPid = new File(asDirPid);
+            try {
+                if (objDirPid.exists())
+                    objPidFile = File.createTempFile(asProgName + "-", ".pid", objDirPid);
+            } catch (Exception ex) {
+                if (asMsg.length() > 0) asMsg.append("\n\t");
+                asMsg.append("Failed to create (temp) Pid_file!! Program: ").append(asProgName);
+                asMsg.append(" => ").append("PID: ").append(getProcessPID());
+                asMsg.append("; Dir.: ").append(asDirPid);
+                asMsg.append("\n\tMsg.: ").append(ex.getMessage());
+                logger.severe(asMsg.toString());
+            }
+        }
+        if (objPidFile != null) {
+            try { // write PID
+                BufferedWriter bw = new BufferedWriter(new FileWriter(objPidFile));
+                bw.write(getProcessPID());
+                bw.close();
+            } catch(IOException e) {
+                msgErr("Failed to write to (temp) Pid_file!! Program: " + asProgName + " = "
+                        + " PID: " + getProcessPID()
+                        + "\n\tMsg.: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+        return objPidFile;
     }
 
 
@@ -427,7 +512,6 @@ public class MainRunBase {
             }
         }
         if (UtilString.isEmpty(sTemp)) sTemp = "/";
-        //sTemp = "2.0.0";
         //System.out.println("\tVersion text extracted: " + sTemp);
         if (sTemp.contains(":")) {
             String[] arrVersion = sTemp.split(":");
