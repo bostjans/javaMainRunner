@@ -133,12 +133,29 @@ public class MainRunBase {
     protected CmdLineParser.Option  obj_op_quiet;
     protected CmdLineParser.Option  obj_op_verbose;
 
+    /**
+     * Flag: should write PID file?
+     */
+    protected boolean bShouldWritePidFile = true;
     protected final String sDirPid01 = "/var/run";
     protected final String sDirPid02 = "/var/tmp";
     protected final String sDirPid03 = "/tmp";
     protected String sDirPid = sDirPid01;
     protected File objDirPid = null;
     protected File objFilePid = null;
+
+    /**
+     * Flag: should write Lock file?
+     */
+    protected boolean bShouldWriteLockFile = true;
+    protected boolean bLockFileExists = false;
+    protected boolean bLockFileAllowMoreInstance = true;
+    protected short iInstanceNum = 1;
+    protected final short iInstanceNumMax = 111;
+    protected final String sDirLock01 = "/var/tmp";
+    protected final String sDirLock02 = "/tmp";
+    protected File objDirLock = null;
+    protected File objFileLock = null;
 
     protected static Logger logger = Logger.getLogger(MainRunBase.class.getName());
 
@@ -204,6 +221,8 @@ public class MainRunBase {
      * ..
      */
     protected void mainStart() {
+        //String          sProgName;
+
         if (GlobalVar.bIsModeTest) {
             if (logger != null) {
                 logger.setLevel(Level.FINE);
@@ -216,9 +235,7 @@ public class MainRunBase {
                 //logger.setUseParentHandlers(false);
             }
         }
-
-        // Check logger
-        {
+        {   // Check logger
             String sTemp = "mainStart(): Program (PID: " + getProcessPID() + ") is starting ..";
             if (logger != null) {
                 logger.info(sTemp);
@@ -226,9 +243,8 @@ public class MainRunBase {
                 msgInfo(sTemp);
             }
         }
-
-        // Create PID (temp)file
-        {
+        if (bShouldWritePidFile)
+        {   // Create PID (temp)file
             String          sProgName;
             StringBuilder   sMsg = new StringBuilder();
 
@@ -248,10 +264,60 @@ public class MainRunBase {
                 msgErr(sMsg.toString());
             } else {
                 objFilePid.deleteOnExit();
-                sMsg.delete(0, sMsg.length() - 1);
+                if (sMsg.length() > 0) sMsg.delete(0, sMsg.length());
                 sMsg.append("(temp) Pid_file created. Program: ").append(sProgName);
-                sMsg.append(" = ").append(" PID: ").append(getProcessPID());
+                sMsg.append(" = ").append("PID: ").append(getProcessPID());
                 sMsg.append("\n\tPid_file: ").append(objFilePid.getAbsolutePath());
+                msgInfo(sMsg.toString());
+                logger.info(sMsg.toString());
+            }
+        }
+        if (bShouldWriteLockFile)
+        {   // Create PID (temp)file
+            String          sProgName;
+            StringBuilder   sMsg = new StringBuilder();
+
+            if (UtilString.isEmptyTrim(GlobalVar.getInstance().sProgName)) sProgName = "programNA";
+            else                                                           sProgName = GlobalVar.getInstance().sProgName;
+            objFileLock = createLockFile(sProgName, System.getProperty("java.io.tmpdir"), iInstanceNum, sMsg);
+//            if (objFileLock == null) {
+//                objFileLock = createLockFile(sProgName, sDirLock01, sMsg);
+//            }
+//            if (objFileLock == null) {
+//                objFileLock = createLockFile(sProgName, sDirLock02, sMsg);
+//            }
+//            if (objFileLock == null) {
+//                objFileLock = createLockFile(sProgName, System.getProperty("user.dir"), sMsg);
+//            }
+            if (objFileLock == null) {
+                if (bLockFileExists) {
+                    if (bLockFileAllowMoreInstance) {
+                        iInstanceNum++;
+                        for (; iInstanceNum < iInstanceNumMax; iInstanceNum++) {
+                            objFileLock = createLockFile(sProgName, System.getProperty("java.io.tmpdir"), iInstanceNum, sMsg);
+                            if (objFileLock != null) break;
+                        }
+                    } else {
+                        msgErr(sMsg.toString());
+                        logger.severe(sMsg.toString());
+                    }
+                }
+            }
+            if (objFileLock == null) {
+                msgErr(sMsg.toString());
+                logger.severe(sMsg.toString());
+                if (bLockFileAllowMoreInstance) {
+                    msgInfo("Lock file could not be created! Check previous error!");
+                } else {
+                    msgInfo("Lock file could not be created! Check that another instance is already running.");
+                }
+                bIsShutdownInitiated = true;
+            } else {
+                objFileLock.deleteOnExit();
+                if (sMsg.length() > 0) sMsg.delete(0, sMsg.length());
+                sMsg.append("(temp) Lock_file created. Program: ").append(sProgName);
+                sMsg.append(" = ").append("Instance: ").append(iInstanceNum);
+                sMsg.append("\n\tLock_file: ").append(objFileLock.getAbsolutePath());
                 msgInfo(sMsg.toString());
                 logger.info(sMsg.toString());
             }
@@ -304,6 +370,47 @@ public class MainRunBase {
             }
         }
         return objPidFile;
+    }
+
+
+    /**
+     * Method: createLockFile
+     *
+     * ..
+     */
+    protected File createLockFile(String asProgName, String asDir, short aiInstance, StringBuilder asMsg) {
+        boolean bResult = false;
+        String  sDir = asDir;
+        String  sFilename = asProgName + "-" + aiInstance + ".lock";
+        File    objFile = null;
+
+        if (UtilString.isEmpty(sDir)) sDir = System.getProperty("java.io.tmpdir");
+        objDirLock = new File(sDir);
+        if (objDirLock.exists()) {
+            objFile = new File(objDirLock, sFilename);
+            if (objFile.exists()) {
+                bLockFileExists = true;
+                asMsg.append("File already exists: ").append(objFile.getAbsolutePath());
+                objFile = null;
+            } else {
+                try { // create ..
+                    bResult = objFile.createNewFile();
+                    if (!bResult) {
+                        asMsg.append("Failed to create Lock_file!! Program: ").append(asProgName);
+                        asMsg.append(" = ").append(" Dir.: ").append(sDir);
+                        asMsg.append("\n\tMsg.: ?");
+                        logger.severe(asMsg.toString());
+                    }
+                } catch(IOException e) {
+                    asMsg.append("Failed to create Lock_file!! Program: ").append(asProgName);
+                    asMsg.append(" = ").append(" Dir.: ").append(sDir);
+                    asMsg.append("\n\tMsg.: ").append(e.getMessage());
+                    logger.severe(asMsg.toString());
+                    e.printStackTrace();
+                }
+            }
+        }
+        return objFile;
     }
 
 
@@ -613,9 +720,12 @@ public class MainRunBase {
 
         // MainStart - for addOn tasks when main() method is started
         mainStart();
+        if (bIsShutdownInitiated) {
+            iResult = ConstGlobal.PROCESS_EXIT_FAILURE;
+            return iResult;
+        }
 
-        // Read Version info. -  from Manifest
-        {
+        {   // Read Version info. -  from Manifest
             int iResultTemp;
 
             iResultTemp = readVersionManifest();
@@ -735,8 +845,7 @@ public class MainRunBase {
             });
         }
 
-        // Invoke Run()
-        {
+        {   // Invoke Run()
             int     iResultTemp;
             String  sTemp;
 
@@ -753,8 +862,7 @@ public class MainRunBase {
             }
             // Check previous step
             if (iResult == ConstGlobal.PROCESS_EXIT_SUCCESS) {
-                // Run ..
-                iResultTemp = run();
+                iResultTemp = run();    // Run ..
                 // Error
                 if (iResultTemp != ConstGlobal.RETURN_OK) {
                     sTemp = "invokeApp(): Error at run() operation!";
