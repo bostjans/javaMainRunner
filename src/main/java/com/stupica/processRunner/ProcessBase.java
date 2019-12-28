@@ -202,7 +202,7 @@ public class ProcessBase {
         dtStart = new Date();
         objRefCountData = new ProcessBase.RefDataInteger();
         if (GlobalVar.bIsModeVerbose) {
-            logger.info("processInLoop(): =-> Start running in Loop - iMaxNumOfLoops: " + iMaxNumOfLoops + " --==");
+            logger.info("processInLoop(" + sProcessName + "): =-> Start running in Loop - iMaxNumOfLoops: " + iMaxNumOfLoops + " --==");
         }
 
         // Process data ..
@@ -216,7 +216,7 @@ public class ProcessBase {
                 dtStartLoop = new Date();
 
                 if (GlobalVar.bIsModeVerbose) {
-                    logger.info("processInLoop(): =-> Loop count: " + objRefCountData.iCountLoop + " ---===");
+                    logger.info("processInLoop(" + sProcessName + "): =-> Loop count: " + objRefCountData.iCountLoop + " ---===");
                 }
                 // Check previous step
                 if (iResult == ConstGlobal.RETURN_OK) {
@@ -224,7 +224,7 @@ public class ProcessBase {
                     iResultTemp = processLoopCycle(objRefCountData);
                     // Error
                     if (iResultTemp != ConstGlobal.RETURN_OK) {
-                        sTemp = "processInLoop(): Error at processLoopCycle() operation!";
+                        sTemp = "processInLoop(" + sProcessName + "): Error at processLoopCycle() operation!";
                         logger.severe(sTemp);
                         System.err.println(sTemp);
                         iResult = iResultTemp;
@@ -235,7 +235,7 @@ public class ProcessBase {
                 objRefCountData.iCountLoop++;
                 if (iMaxNumOfLoops > 0) {
                     if (iMaxNumOfLoops <= (objRefCountData.iCountLoop - 0)) {
-                        logger.info("processInLoop(): Maximum number of loops reached: " + iMaxNumOfLoops);
+                        logger.info("processInLoop(" + sProcessName + "): Maximum number of loops reached: " + iMaxNumOfLoops);
                         break;
                     }
                 }
@@ -326,7 +326,7 @@ public class ProcessBase {
             dtStop = new Date();
             iTimeElapsed = dtStop.getTime() - adtStart.getTime();
             if (iTimeElapsed > iTimeElapsedStopLimit) {
-                logger.warning("checkTimeElapsedStopLimit(): Stop Time limit reached!"
+                logger.warning("checkTimeElapsedStopLimit(" + sProcessName + "): Stop Time limit reached!"
                         + " iTimeElapsedStopLimit: " + iTimeElapsedStopLimit);
                 bShouldStop = true;
             }
