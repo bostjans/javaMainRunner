@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 public class ProcessBase {
 
     public boolean  bShouldStop = false;
+    public boolean  bShouldWait = false;
     public boolean  bIsInThread = true;
 
     /**
@@ -218,8 +219,12 @@ public class ProcessBase {
                 if (GlobalVar.bIsModeVerbose) {
                     logger.info("processInLoop(" + sProcessName + "): =-> Loop count: " + objRefCountData.iCountLoop + " ---===");
                 }
+                if (bShouldStop) {
+                    logger.info("processInLoop(" + sProcessName + "): shouldStop: " + bShouldStop);
+                    break;
+                }
                 // Check previous step
-                if (iResult == ConstGlobal.RETURN_OK) {
+                //if (iResult == ConstGlobal.RETURN_OK) {
                     // Run ..
                     iResultTemp = processLoopCycle(objRefCountData);
                     // Error
@@ -229,17 +234,21 @@ public class ProcessBase {
                         System.err.println(sTemp);
                         iResult = iResultTemp;
                     }
-                }
+                //}
                 iCountDataAll += objRefCountData.iCountData;
 
                 objRefCountData.iCountLoop++;
                 if (iMaxNumOfLoops > 0) {
-                    if (iMaxNumOfLoops <= (objRefCountData.iCountLoop - 0)) {
+                    if (iMaxNumOfLoops <= (objRefCountData.iCountLoop)) {
                         logger.info("processInLoop(" + sProcessName + "): Maximum number of loops reached: " + iMaxNumOfLoops);
                         break;
                     }
                 }
                 if (checkTimeElapsedStopLimit(dtStart)) {
+                    break;
+                }
+                if (bShouldStop) {
+                    logger.info("processInLoop(" + sProcessName + "): shouldStop: " + bShouldStop);
                     break;
                 }
 
@@ -261,13 +270,33 @@ public class ProcessBase {
                         sSleep.append(" -> #Loop: ").append(String.format("%05d", objRefCountData.iCountLoop));
                         sSleep.append("\tTime: ").append(UtilDate.toUniversalString(dtStopLoop));
                         sSleep.append("\tElapse(ms): ").append(String.format("%05d", dtStopLoop.getTime() - dtStartLoop.getTime()));
-                        sSleep.append("\tshouldStop: ").append(bShouldStop);
+                        //sSleep.append("\tshouldStop: ").append(bShouldStop);
+                        sSleep.append("\tshouldWait: ").append(bShouldWait);
                         if (bShouldWriteLoopInfo2stdOut)
                             System.out.println(sSleep.toString());
                         if (bShouldWriteLoopInfo2log)
-                            logger.info("processInLoop(): " + sSleep.toString());
-                        if (iPauseBetweenLoop != 0) {
+                            logger.info("processInLoop(" + sProcessName + "): " + sSleep.toString());
+                        if ((iPauseBetweenLoop != 0) && (!bShouldWait)) {
                             iResult = UtilCommon.sleepFoxMillis(iPauseBetweenLoop);   // Pause for ? second(s)
+                        }
+                        if (bShouldWait) {
+                            bShouldWait = false;
+                            try {
+                                synchronized(this) {
+                                    wait();
+                                }
+                            } catch (IllegalMonitorStateException ex) {
+                                bShouldStop = true;
+                                logger.severe("processInLoop(" + sProcessName + "): Wait NOT possible! -> Terminate .."
+                                        + " Msg.: " + ex.getMessage());
+                                if (GlobalVar.bIsModeVerbose) {
+                                    ex.printStackTrace();
+                                }
+                            } catch (InterruptedException ex) {
+                                bShouldStop = true;
+                                logger.warning("processInLoop(" + sProcessName + "): Wait was interrupted!"
+                                        + " Msg.: " + ex.getMessage());
+                            }
                         }
                     }
                 }
@@ -275,7 +304,7 @@ public class ProcessBase {
         }
 
         dtStop = new Date();
-        logger.info("processInLoop(): Processing done."
+        logger.info("processInLoop(" + sProcessName + "): Processing done."
                 + "\n\tData num.: " + objRefCountData.iCountData + "/" + iCountDataAll
                 + "\tLoop#: " + objRefCountData.iCountLoop
                 + "\t\tDuration(ms): " + (dtStop.getTime() - dtStart.getTime()));
