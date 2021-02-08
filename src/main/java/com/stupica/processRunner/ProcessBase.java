@@ -16,6 +16,7 @@ public class ProcessBase {
     public boolean  bShouldStop = false;
     public boolean  bShouldWait = false;
     public boolean  bIsInThread = true;
+    public boolean  bIsThreadDone = false;
 
     /**
      * Flag: is program/process running in loops?
@@ -203,7 +204,9 @@ public class ProcessBase {
         dtStart = new Date();
         objRefCountData = new ProcessBase.RefDataInteger();
         if (GlobalVar.bIsModeVerbose) {
-            logger.info("processInLoop(" + sProcessName + "): =-> Start running in Loop - iMaxNumOfLoops: " + iMaxNumOfLoops + " --==");
+            logger.info("processInLoop(" + sProcessName + "): =-> Start running in Loop - iMaxNumOfLoops: " + iMaxNumOfLoops
+                    + "; iTimeElapsedStopLimit: " + iTimeElapsedStopLimit
+                    + " --==");
         }
 
         // Process data ..
@@ -245,6 +248,8 @@ public class ProcessBase {
                     }
                 }
                 if (checkTimeElapsedStopLimit(dtStart)) {
+                    logger.info("processInLoop(" + sProcessName + "): shouldStop: " + bShouldStop
+                            + "; from checkTimeElapsedStopLimit(..);");
                     break;
                 }
                 if (bShouldStop) {

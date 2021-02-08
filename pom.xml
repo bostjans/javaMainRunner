@@ -27,7 +27,7 @@
         <dependency>
             <groupId>com.stupica.base</groupId>
             <artifactId>globalVar</artifactId>
-            <version>1.4.5</version>
+            <version>[1,2)</version>
         </dependency>
     </dependencies>
 
@@ -52,7 +52,7 @@
             <extension>
                 <groupId>org.apache.maven.wagon</groupId>
                 <artifactId>wagon-ftp</artifactId>
-                <version>3.3.1</version>
+                <version>[3.3,3.4)</version>
             </extension>
         </extensions>
     </build>
