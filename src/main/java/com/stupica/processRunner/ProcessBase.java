@@ -24,6 +24,7 @@ public class ProcessBase {
     public boolean bIsProcessInLoop = false;
     protected long iMaxNumOfLoops = 1;
     protected int  iPauseBetweenLoop = 1000 * 2;    // 2 sec .. is default;
+    protected int  iPauseAtStart = 0;               // Pause before (actual) start processing;
 
     public long    iTimeElapsedStopLimit = 0;
     //long    iTimeElapsedStopLimit = 1000 * 60;          // 1 min
@@ -118,6 +119,10 @@ public class ProcessBase {
 
         // Initialization
         iResult = ConstGlobal.RETURN_SUCCESS;
+
+        if (iPauseAtStart != 0) {
+            UtilCommon.sleepFoxMillis(iPauseAtStart);
+        }
 
         if (bIsProcessInLoop) {
             iResult = processLoopBefore();
