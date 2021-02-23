@@ -1065,7 +1065,7 @@ public class MainRunBase {
                     iResultTemp = runLoopCycle(objRefCountData);
                     // Error
                     if (iResultTemp != ConstGlobal.RETURN_OK) {
-                        sTemp = "runInLoop(): Error at runLoopCycle() operation!";
+                        sTemp = "runInLoop(): Error at runLoopCycle() operation! Result: " + iResultTemp;
                         logger.severe(sTemp);
                         msgErr(sTemp);
                         iResult = iResultTemp;
