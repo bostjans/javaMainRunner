@@ -89,6 +89,9 @@ public class MainRunBase {
     /** terminal escape sequence (ends coloured text) */
     public String TERM_RESET = "\033[0m";
 
+    // Define: common filename for App. configuration
+    public static final String DEFINE_CONF_FILENAME = "config.properties";
+
     public static String MANIFEST_KEY_IMPL_VERSION = "Implementation-Version";
     public static String MANIFEST_KEY_SPEC_VERSION = "Specification-Version";
     public static String MANIFEST_KEY_CAPSULE_VER = "Embedded-Artifacts";
@@ -493,11 +496,32 @@ public class MainRunBase {
     public int readConfig() {
         // Local variables
         int             iResult;
-        String          sFileConf = "properties/config.properties";
+        String          sTemp = null;
+        String          sConfFilenameEnv = "app.path.config";
+        String          sFileConf = "properties" + File.separator + DEFINE_CONF_FILENAME;
         FileInputStream fileIn = null;
 
         // Initialization
         iResult = ConstGlobal.RETURN_OK;
+
+        // Get conf. from env. variable .. if exists
+        //
+        // Check previous step
+        if (iResult == ConstGlobal.RETURN_OK) {
+            try {
+                sTemp = System.getenv(sConfFilenameEnv);
+                if (UtilString.isEmpty(sTemp)) {
+                    logger.warning("readConfig(): (Java) Env. variable: " + sConfFilenameEnv
+                            + " > could NOT be retrieved! Continuing ..");
+                } else {
+                    sFileConf = sTemp + File.separator + DEFINE_CONF_FILENAME;
+                }
+            } catch (Exception e) {
+                logger.warning("readConfig(): Env. variable: " + sConfFilenameEnv
+                        + " > could NOT be retrieved!"
+                        + " Msg.: " + e.getMessage());
+            }
+        }
 
         // Check previous step
         if (iResult == ConstGlobal.RETURN_OK) {
@@ -506,7 +530,8 @@ public class MainRunBase {
             } catch (FileNotFoundException e) {
                 iResult = ConstGlobal.RETURN_ERROR;
                 logger.severe("readConfig(): Error at reading conf. file!"
-                        + " Msg.: " + e.getMessage());
+                        + " File: " + sFileConf
+                        + "; Msg.: " + e.getMessage());
             }
         }
         if (fileIn == null) {
