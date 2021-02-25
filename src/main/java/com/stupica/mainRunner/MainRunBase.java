@@ -437,7 +437,6 @@ public class MainRunBase {
         msgInfo("Program: " + GlobalVar.getInstance().sProgName);
         //System.out.println("Version: " + GlobalVar.getInstance().get_version());
         msgWarn("Version: " + GlobalVar.getInstance().get_version());
-        //System.out.println("Made by: " + GlobalVar.getInstance().sAuthor);
         msgInfo("Made by: " + GlobalVar.getInstance().sAuthor);
         System.out.println("===");
     }
@@ -497,7 +496,8 @@ public class MainRunBase {
         // Local variables
         int             iResult;
         String          sTemp = null;
-        String          sConfFilenameEnv = "app.path.config";
+        String          sConfPathEnv = "APP_PATH_CONFIG";
+        String          sConfJavaPathEnv = "app.path.config";
         String          sFileConf = "properties" + File.separator + DEFINE_CONF_FILENAME;
         FileInputStream fileIn = null;
 
@@ -509,17 +509,29 @@ public class MainRunBase {
         // Check previous step
         if (iResult == ConstGlobal.RETURN_OK) {
             try {
-                sTemp = System.getenv(sConfFilenameEnv);
+                sTemp = System.getenv(sConfPathEnv);
                 if (UtilString.isEmpty(sTemp)) {
-                    logger.warning("readConfig(): (Java) Env. variable: " + sConfFilenameEnv
+                    logger.warning("readConfig(): Env. variable: " + sConfPathEnv
                             + " > could NOT be retrieved! Continuing ..");
                 } else {
                     sFileConf = sTemp + File.separator + DEFINE_CONF_FILENAME;
                 }
             } catch (Exception e) {
-                logger.warning("readConfig(): Env. variable: " + sConfFilenameEnv
+                logger.warning("readConfig(): Env. variable: " + sConfPathEnv
                         + " > could NOT be retrieved!"
                         + " Msg.: " + e.getMessage());
+            }
+        }
+        // Check previous step
+        if (iResult == ConstGlobal.RETURN_OK) {
+            if (System.getProperties().containsKey(sConfJavaPathEnv)) {
+                sTemp = System.getProperties().getProperty(sConfJavaPathEnv);
+                if (UtilString.isEmpty(sTemp)) {
+                    logger.warning("readConfig(): (Java) Property variable: " + sConfJavaPathEnv
+                            + " > could NOT be retrieved! Continuing ..");
+                } else {
+                    sFileConf = sTemp + File.separator + DEFINE_CONF_FILENAME;
+                }
             }
         }
 
