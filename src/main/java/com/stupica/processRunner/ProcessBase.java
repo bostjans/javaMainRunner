@@ -62,6 +62,14 @@ public class ProcessBase {
     }
 
 
+    public void setMaxNumOfLoops(long aiVal) {
+        iMaxNumOfLoops = aiVal;
+    }
+    public void setPauseBetweenLoop(int aiVal) {
+        iPauseBetweenLoop = aiVal;
+    }
+
+
     /**
      * Method: run
      *
