@@ -433,7 +433,6 @@ public class MainRunBase {
     public void printProgramInfo() {
         // Display program info
         System.out.println();
-        //System.out.println("Program: " + GlobalVar.getInstance().sProgName);
         msgInfo("Program: " + GlobalVar.getInstance().sProgName);
         //System.out.println("Version: " + GlobalVar.getInstance().get_version());
         msgWarn("Version: " + GlobalVar.getInstance().get_version());
@@ -1045,6 +1044,8 @@ public class MainRunBase {
      * Method: runShutdownHook
      *
      * Run/Initiate Shutdown procedure.
+     * Resource:
+     * https://examples.javacodegeeks.com/jvm-shutdown-hook-in-java/
      *
      * @return int	1 = AllOK;
      */
