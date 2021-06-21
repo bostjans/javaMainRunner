@@ -6,6 +6,7 @@ import com.stupica.GlobalVar;
 import com.stupica.core.UtilDate;
 import com.stupica.core.UtilString;
 
+import com.stupica.processRunner.ProcessCore;
 import jargs.gnu.CmdLineParser;
 
 import java.io.*;
@@ -21,7 +22,7 @@ import java.util.logging.Logger;
 /**
  * Created by bostjans on 24/07/17.
  */
-public class MainRunBase {
+public class MainRunBase extends ProcessCore {
     // Variables
     //
     /**
@@ -92,9 +93,9 @@ public class MainRunBase {
     // Define: common filename for App. configuration
     public static final String DEFINE_CONF_FILENAME = "config.properties";
 
-    public static String MANIFEST_KEY_IMPL_VERSION = "Implementation-Version";
-    public static String MANIFEST_KEY_SPEC_VERSION = "Specification-Version";
-    public static String MANIFEST_KEY_CAPSULE_VER = "Embedded-Artifacts";
+    public static final String MANIFEST_KEY_IMPL_VERSION = "Implementation-Version";
+    public static final String MANIFEST_KEY_SPEC_VERSION = "Specification-Version";
+    public static final String MANIFEST_KEY_CAPSULE_VER = "Embedded-Artifacts";
 
     /**
      * Flag: should read configuration from file?
@@ -113,19 +114,19 @@ public class MainRunBase {
     /**
      * Flag: is program/process running in loops?
      */
-    public boolean bIsRunInLoop = false;
-    protected long iMaxNumOfLoops = 1;
-    protected int  iPauseBetweenLoop = 1000 * 2;    // 2 sec .. is default;
+    //public boolean bIsRunInLoop = false;
+    //protected long iMaxNumOfLoops = 1;
+    //protected int  iPauseBetweenLoop = 1000 * 2;    // 2 sec .. is default;
     /**
      * Flag: should write loop information to StdOut?
      * Sample:
      *    programName: Sleep .. -> #Loop: 02456        Time: 2019-11-21_23:49:20       Elapse(ms): 02648
      */
-    protected boolean bShouldWriteLoopInfo2stdOut = true;
+    //protected boolean bShouldWriteLoopInfo2stdOut = true;
     /**
      * Flag: should write loop information to log?
      */
-    protected boolean bShouldWriteLoopInfo2log = false;
+    //protected boolean bShouldWriteLoopInfo2log = false;
 
     public String sJavaVersion = "/";
 
@@ -164,10 +165,10 @@ public class MainRunBase {
 
 
     // inner class
-    public class RefDataInteger {
-        public long iCountLoop = 0L;
-        public int  iCountData = 0;
-    }
+    //public class RefDataInteger {
+    //    public long iCountLoop = 0L;
+    //    public int  iCountData = 0;
+    //}
 
 
     /**
@@ -984,7 +985,7 @@ public class MainRunBase {
         // Initialization
         iResult = ConstGlobal.RETURN_SUCCESS;
 
-        if (bIsRunInLoop) {
+        if (bIsProcessInLoop) {
             iResult = runLoopBefore();
             // Error
             if (iResult != ConstGlobal.RETURN_OK) {
@@ -1068,18 +1069,17 @@ public class MainRunBase {
         // Local variables
         int         iResult;
         //
-        //long        iCountLoop = 0L;
         long        iCountDataAll = 0L;
         Date        dtStart;
         Date        dtStartLoop;
         Date        dtStop;
-        RefDataInteger objRefCountData;
+        ProcessCore.RefDataInteger objRefCountData;
 
         // Initialization
         iResult = ConstGlobal.RETURN_SUCCESS;
         dtStart = new Date();
         //dtStartLoop = new Date();
-        objRefCountData = new RefDataInteger();
+        objRefCountData = new ProcessCore.RefDataInteger();
         if (GlobalVar.bIsModeVerbose) {
             logger.info("runInLoop(): =-> Start running in Loop - iMaxNumOfLoops: " + iMaxNumOfLoops + " --==");
         }

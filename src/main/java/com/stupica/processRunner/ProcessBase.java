@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.logging.Logger;
 
 
-public class ProcessBase {
+public class ProcessBase extends ProcessCore {
 
     public boolean  bShouldStop = false;
     public boolean  bShouldWait = false;
@@ -21,10 +21,10 @@ public class ProcessBase {
     /**
      * Flag: is program/process running in loops?
      */
-    public boolean bIsProcessInLoop = false;
-    protected long iMaxNumOfLoops = 1;
-    protected int  iPauseBetweenLoop = 1000 * 2;    // 2 sec .. is default;
-    protected int  iPauseAtStart = 0;               // Pause before (actual) start processing;
+//    public boolean bIsProcessInLoop = false;
+//    protected long iMaxNumOfLoops = 1;
+//    protected int  iPauseBetweenLoop = 1000 * 2;    // 2 sec .. is default;
+//    protected int  iPauseAtStart = 0;               // Pause before (actual) start processing;
 
     public long    iTimeElapsedStopLimit = 0;
     //long    iTimeElapsedStopLimit = 1000 * 60;          // 1 min
@@ -35,11 +35,11 @@ public class ProcessBase {
      * Sample:
      *    programName: Sleep .. -> #Loop: 02456        Time: 2019-11-21_23:49:20       Elapse(ms): 02648
      */
-    protected boolean bShouldWriteLoopInfo2stdOut = true;
+    //protected boolean bShouldWriteLoopInfo2stdOut = true;
     /**
      * Flag: should write loop information to log?
      */
-    protected boolean bShouldWriteLoopInfo2log = false;
+    //protected boolean bShouldWriteLoopInfo2log = false;
 
     public String   sProcessName = "ProcX";
 
@@ -47,10 +47,10 @@ public class ProcessBase {
 
 
     // inner class
-    public class RefDataInteger {
-        public long iCountLoop = 0L;
-        public int  iCountData = 0;
-    }
+//    public class RefDataInteger {
+//        public long iCountLoop = 0L;
+//        public int  iCountData = 0;
+//    }
 
 
     /**
@@ -59,14 +59,6 @@ public class ProcessBase {
      * ..
      */
     protected void initialize() {
-    }
-
-
-    public void setMaxNumOfLoops(long aiVal) {
-        iMaxNumOfLoops = aiVal;
-    }
-    public void setPauseBetweenLoop(int aiVal) {
-        iPauseBetweenLoop = aiVal;
     }
 
 
@@ -210,12 +202,12 @@ public class ProcessBase {
         Date        dtStart;
         Date        dtStartLoop;
         Date        dtStop;
-        ProcessBase.RefDataInteger objRefCountData;
+        ProcessCore.RefDataInteger objRefCountData;
 
         // Initialization
         iResult = ConstGlobal.RETURN_SUCCESS;
         dtStart = new Date();
-        objRefCountData = new ProcessBase.RefDataInteger();
+        objRefCountData = new ProcessCore.RefDataInteger();
         if (GlobalVar.bIsModeVerbose) {
             logger.info("processInLoop(" + sProcessName + "): =-> Start running in Loop - iMaxNumOfLoops: " + iMaxNumOfLoops
                     + "; iTimeElapsedStopLimit: " + iTimeElapsedStopLimit
@@ -245,10 +237,15 @@ public class ProcessBase {
                     iResultTemp = processLoopCycle(objRefCountData);
                     // Error
                     if (iResultTemp != ConstGlobal.RETURN_OK) {
-                        sTemp = "processInLoop(" + sProcessName + "): Error at processLoopCycle() operation!";
+                        sTemp = "processInLoop(" + sProcessName + "): Error at processLoopCycle() operation!"
+                            + " CountAll: " + iCountDataAll
+                            + "; CountLoop: " + objRefCountData.iCountLoop;
+                        if (bShouldIgnoreLoopError)
+                            sTemp += " Continue ..";
                         logger.severe(sTemp);
                         System.err.println(sTemp);
-                        iResult = iResultTemp;
+                        if (!bShouldIgnoreLoopError)
+                            iResult = iResultTemp;
                     }
                 //}
                 iCountDataAll += objRefCountData.iCountData;
