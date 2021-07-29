@@ -97,6 +97,8 @@ public class MainRunBase extends ProcessCore {
     public static final String MANIFEST_KEY_SPEC_VERSION = "Specification-Version";
     public static final String MANIFEST_KEY_CAPSULE_VER = "Embedded-Artifacts";
 
+    protected static int    iReturnCode = ConstGlobal.PROCESS_EXIT_SUCCESS;
+
     /**
      * Flag: should read configuration from file?
      */
@@ -111,22 +113,6 @@ public class MainRunBase extends ProcessCore {
     protected boolean bShouldEnableShutdownHook = false;
     public boolean bIsShutdownInitiated = false;
     protected boolean bIsShutdownReady2Stop = false;
-    /**
-     * Flag: is program/process running in loops?
-     */
-    //public boolean bIsRunInLoop = false;
-    //protected long iMaxNumOfLoops = 1;
-    //protected int  iPauseBetweenLoop = 1000 * 2;    // 2 sec .. is default;
-    /**
-     * Flag: should write loop information to StdOut?
-     * Sample:
-     *    programName: Sleep .. -> #Loop: 02456        Time: 2019-11-21_23:49:20       Elapse(ms): 02648
-     */
-    //protected boolean bShouldWriteLoopInfo2stdOut = true;
-    /**
-     * Flag: should write loop information to log?
-     */
-    //protected boolean bShouldWriteLoopInfo2log = false;
 
     public String sJavaVersion = "/";
 
@@ -161,14 +147,39 @@ public class MainRunBase extends ProcessCore {
     protected File objDirLock = null;
     protected File objFileLock = null;
 
+    protected Thread objMainShutdownHook = null;
+
     protected static Logger logger = Logger.getLogger(MainRunBase.class.getName());
 
 
     // inner class
-    //public class RefDataInteger {
-    //    public long iCountLoop = 0L;
-    //    public int  iCountData = 0;
-    //}
+    class MainShutdownHookThread extends Thread {
+        public void run() {
+            int     iResultTemp;
+            String  sTemp;
+
+            iResultTemp = runShutdownHook();
+            // Error
+            if (iResultTemp != ConstGlobal.RETURN_OK) {
+                sTemp = "MainShutdownHookThread.run(): Error at runShutdownHook() operation!";
+                logger.severe(sTemp);
+                msgWarn(sTemp);
+            }
+            if (iReturnCode == ConstGlobal.PROCESS_EXIT_SUCCESS)
+                iReturnCode = ConstGlobal.PROCESS_EXIT_SIGINT;
+            msgInfo("MainShutdownHookThread.run(): Shouting down (final) ..  -  ReturnCode: " + iReturnCode);
+            //System.exit(iReturnCode);     <-- this Blocks shutdown!
+            //System.exit(Main.Result.ABNORMAL.exitCode);
+            System.runFinalization();
+            //Runtime.getRuntime().exit(iReturnCode);   <-- this Blocks shutdown!
+            try {
+                //this.wait(1000 * 12);     <-- this reports error: IligalThreadState
+                this.join(1000 * 1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
 
     /**
@@ -693,7 +704,6 @@ public class MainRunBase extends ProcessCore {
         obj_op_help = obj_parser.addBooleanOption('h', "help");
         obj_op_quiet = obj_parser.addBooleanOption('q', "quiet");
         obj_op_verbose = obj_parser.addBooleanOption('v', "verbose");
-
         return iResult;
     }
 
@@ -747,10 +757,11 @@ public class MainRunBase extends ProcessCore {
      */
     public int invokeApp(String arrArgs[]) {
         // Local variables
-        int         iResult;
+        //int         iResult;
+        boolean     bIsRunBeforeCalled = false;
 
         // Initialization
-        iResult = ConstGlobal.PROCESS_EXIT_SUCCESS;
+        //iResult = ConstGlobal.PROCESS_EXIT_SUCCESS;
 
         // Initialize
         initialize();
@@ -758,8 +769,8 @@ public class MainRunBase extends ProcessCore {
         // MainStart - for addOn tasks when main() method is started
         mainStart();
         if (bIsShutdownInitiated) {
-            iResult = ConstGlobal.PROCESS_EXIT_FAILURE;
-            return iResult;
+            iReturnCode = ConstGlobal.PROCESS_EXIT_SIGINT;
+            return iReturnCode;
         }
 
         {   // Read Version info. -  from Manifest
@@ -769,7 +780,7 @@ public class MainRunBase extends ProcessCore {
             // Error
             if (iResultTemp != ConstGlobal.RETURN_OK) {
                 msgErr("main(): Error at readVersionManifest() operation!");
-                iResult = ConstGlobal.PROCESS_EXIT_FAILURE;
+                iReturnCode = ConstGlobal.PROCESS_EXIT_FAILURE;
             }
         }
 
@@ -779,7 +790,7 @@ public class MainRunBase extends ProcessCore {
             String  sTemp;
 
             // Check previous step
-            if (iResult == ConstGlobal.PROCESS_EXIT_SUCCESS) {
+            if (iReturnCode == ConstGlobal.PROCESS_EXIT_SUCCESS) {
                 // Read ..
                 iResultTemp = readConfig();
                 // Error
@@ -789,7 +800,7 @@ public class MainRunBase extends ProcessCore {
                     sTemp = "invokeApp(): Error at readConfig() operation!";
                     logger.severe(sTemp);
                     msgWarn(sTemp);
-                    iResult = ConstGlobal.PROCESS_EXIT_FAILURE;
+                    iReturnCode = ConstGlobal.PROCESS_EXIT_FAILURE;
                 }
             }
         }
@@ -800,17 +811,15 @@ public class MainRunBase extends ProcessCore {
             String  sTemp;
 
             // Check previous step
-            if (iResult == ConstGlobal.PROCESS_EXIT_SUCCESS) {
+            if (iReturnCode == ConstGlobal.PROCESS_EXIT_SUCCESS) {
                 // Read ..
                 iResultTemp = setConfig();
                 // Error
                 if (iResultTemp != ConstGlobal.RETURN_OK) {
-                    //sTemp = "invokeApp(): Error at readConfig() operation!"
-                    //        + "\n\tPrepare config file from sample .. as this will be required in future!";
                     sTemp = "invokeApp(): Error at setConfig() operation!";
                     logger.severe(sTemp);
                     msgWarn(sTemp);
-                    iResult = ConstGlobal.PROCESS_EXIT_FAILURE;
+                    iReturnCode = ConstGlobal.PROCESS_EXIT_FAILURE;
                 }
             }
         }
@@ -821,7 +830,7 @@ public class MainRunBase extends ProcessCore {
             String  sTemp;
 
             // Check previous step
-            if (iResult == ConstGlobal.PROCESS_EXIT_SUCCESS) {
+            if (iReturnCode == ConstGlobal.PROCESS_EXIT_SUCCESS) {
                 // Create a CmdLineParser, and add to it the appropriate Options.
                 obj_parser = new CmdLineParser();
 
@@ -831,7 +840,7 @@ public class MainRunBase extends ProcessCore {
                     sTemp = "invokeApp(): Error at defineArguments() operation!";
                     logger.severe(sTemp);
                     msgWarn(sTemp);
-                    iResult = ConstGlobal.PROCESS_EXIT_FAILURE;
+                    iReturnCode = ConstGlobal.PROCESS_EXIT_FAILURE;
                 }
             }
         }
@@ -842,7 +851,7 @@ public class MainRunBase extends ProcessCore {
             String  sTemp;
 
             // Check previous step
-            if (iResult == ConstGlobal.PROCESS_EXIT_SUCCESS) {
+            if (iReturnCode == ConstGlobal.PROCESS_EXIT_SUCCESS) {
                 try {
                     obj_parser.parse(arrArgs);
                 } catch (CmdLineParser.OptionException e) {
@@ -857,29 +866,33 @@ public class MainRunBase extends ProcessCore {
                     sTemp = "invokeApp(): Error at readArguments() operation!";
                     logger.severe(sTemp);
                     msgWarn(sTemp);
-                    iResult = ConstGlobal.PROCESS_EXIT_FAILURE;
+                    iReturnCode = ConstGlobal.PROCESS_EXIT_FAILURE;
                 }
             }
         }
 
         // Enable ShutdownHook
         if (bShouldEnableShutdownHook) {
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-                public void run() {
-                    int     iResultTemp;
-                    String  sTemp;
-
-                    iResultTemp = runShutdownHook();
-                    // Error
-                    if (iResultTemp != ConstGlobal.RETURN_OK) {
-                        sTemp = "invokeApp(): Error at runShutdownHook() operation!";
-                        logger.severe(sTemp);
-                        msgWarn(sTemp);
-                        //iResult = ConstGlobal.PROCESS_EXIT_FAILURE;
-                    }
-                    msgInfo("invokeApp(Thread): Shouting down (final) ..");
-                }
-            });
+            objMainShutdownHook = new MainShutdownHookThread();
+            objMainShutdownHook.setName("ShutdownHook-" + getProcessPID());
+//            Runtime.getRuntime().addShutdownHook(new Thread() {
+//                public void run() {
+//                    int     iResultTemp;
+//                    String  sTemp;
+//
+//                    iResultTemp = runShutdownHook();
+//                    // Error
+//                    if (iResultTemp != ConstGlobal.RETURN_OK) {
+//                        sTemp = "invokeApp(): Error at runShutdownHook() operation!";
+//                        logger.severe(sTemp);
+//                        msgWarn(sTemp);
+//                    }
+//                    iReturnCode = ConstGlobal.PROCESS_EXIT_SIGINT;
+//                    msgInfo("invokeApp(Thread): Shouting down (final) ..  -  ReturnCode: " + iReturnCode);
+//                    //System.exit(iReturnCode);
+//                }
+//            });
+            Runtime.getRuntime().addShutdownHook(objMainShutdownHook);
         }
 
         {   // Invoke Run()
@@ -887,41 +900,59 @@ public class MainRunBase extends ProcessCore {
             String  sTemp;
 
             // Check previous step
-            if (iResult == ConstGlobal.PROCESS_EXIT_SUCCESS) {
+            if (iReturnCode == ConstGlobal.PROCESS_EXIT_SUCCESS) {
                 iResultTemp = runBefore();
                 // Error
                 if (iResultTemp != ConstGlobal.RETURN_OK) {
-                    sTemp = "invokeApp(): Error at runBefore() operation!";
+                    if (iReturnCode == ConstGlobal.PROCESS_EXIT_SUCCESS)
+                        iReturnCode = ConstGlobal.PROCESS_EXIT_FAILURE;
+                    sTemp = "invokeApp(): Error at runBefore() operation! iReturnCode: " + iReturnCode;
                     logger.severe(sTemp);
                     msgErr(sTemp);
-                    iResult = ConstGlobal.PROCESS_EXIT_FAILURE;
                 }
+                bIsRunBeforeCalled = true;
             }
             // Check previous step
-            if (iResult == ConstGlobal.PROCESS_EXIT_SUCCESS) {
+            if (iReturnCode == ConstGlobal.PROCESS_EXIT_SUCCESS) {
                 iResultTemp = run();    // Run ..
                 // Error
                 if (iResultTemp != ConstGlobal.RETURN_OK) {
-                    sTemp = "invokeApp(): Error at run() operation!";
+                    if (iReturnCode == ConstGlobal.PROCESS_EXIT_SUCCESS)
+                        iReturnCode = ConstGlobal.PROCESS_EXIT_FAILURE;
+                    sTemp = "invokeApp(): Error at run() operation! iReturnCode: " + iReturnCode;
                     logger.severe(sTemp);
                     msgErr(sTemp);
-                    iResult = ConstGlobal.PROCESS_EXIT_FAILURE;
                 }
             }
             // Check previous step
-            //if (iResult == ConstGlobal.PROCESS_EXIT_SUCCESS)
-            {
+            if (bIsRunBeforeCalled) {
                 iResultTemp = runAfter();
                 // Error
                 if (iResultTemp != ConstGlobal.RETURN_OK) {
-                    sTemp = "invokeApp(): Error at runAfter() operation!";
+                    if (iReturnCode == ConstGlobal.PROCESS_EXIT_SUCCESS)
+                        iReturnCode = ConstGlobal.PROCESS_EXIT_FAILURE;
+                    sTemp = "invokeApp(): Error at runAfter() operation! iReturnCode: " + iReturnCode;
                     logger.severe(sTemp);
                     msgErr(sTemp);
-                    iResult = ConstGlobal.PROCESS_EXIT_FAILURE;
                 }
             }
         }
-        return iResult;
+        if (bShouldEnableShutdownHook) {
+            if (objMainShutdownHook != null) {
+                System.out.println("invokeApp(): shutdownHook Thread: " + objMainShutdownHook.getState().toString());
+                if (objMainShutdownHook.getState() == Thread.State.NEW) {
+                    Runtime.getRuntime().removeShutdownHook(objMainShutdownHook);
+                    objMainShutdownHook = null;
+                } else {
+                    try {
+                        objMainShutdownHook.join();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        return iReturnCode;
     }
 
 
@@ -930,9 +961,8 @@ public class MainRunBase extends ProcessCore {
      * @param s message
      */
     protected void msgInfo(String s) {
-        if (s != null) {
+        if (s != null)
             System.out.println(TERM_BOLD + "INFO:    " + TERM_RESET + s);
-        }
     }
 
     /**
@@ -1052,7 +1082,7 @@ public class MainRunBase extends ProcessCore {
      */
     protected int runShutdownHook() {
         bIsShutdownInitiated = true;
-        msgInfo("runShutdownHook(): Shouting down initiated ..");
+        msgInfo("runShutdownHook(00): Shutdown initiated ..  -  ReturnCode: " + iReturnCode);
         //bIsShutdownReady2Stop = true;
         return ConstGlobal.RETURN_OK;
     }
