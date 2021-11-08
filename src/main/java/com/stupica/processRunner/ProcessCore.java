@@ -21,6 +21,10 @@ public class ProcessCore {
      * Flag: should write loop information to log?
      */
     protected boolean bShouldWriteLoopInfo2log = false;
+    /**
+     * Frequency for "write loop info"
+     */
+    protected int iWriteLoopInfoFrequency = 1;
 
     /**
      * Flag: should ignore all error(s) in Loop cycle?
@@ -31,6 +35,7 @@ public class ProcessCore {
     // inner class
     public class RefDataInteger {
         public long iCountLoop = 0L;
+        public int  iCountLoopFreq = 0;
         public int  iCountData = 0;
     }
 

@@ -30,27 +30,9 @@ public class ProcessBase extends ProcessCore {
     //long    iTimeElapsedStopLimit = 1000 * 60;          // 1 min
     //long    iTimeElapsedStopLimit = 1000 * 60 * 60;     // 1 hour
 
-    /**
-     * Flag: should write loop information to StdOut?
-     * Sample:
-     *    programName: Sleep .. -> #Loop: 02456        Time: 2019-11-21_23:49:20       Elapse(ms): 02648
-     */
-    //protected boolean bShouldWriteLoopInfo2stdOut = true;
-    /**
-     * Flag: should write loop information to log?
-     */
-    //protected boolean bShouldWriteLoopInfo2log = false;
-
     public String   sProcessName = "ProcX";
 
     private static Logger logger = Logger.getLogger(ProcessBase.class.getName());
-
-
-    // inner class
-//    public class RefDataInteger {
-//        public long iCountLoop = 0L;
-//        public int  iCountData = 0;
-//    }
 
 
     /**
@@ -111,7 +93,7 @@ public class ProcessBase extends ProcessCore {
      *
      * ..
      *
-     * @return int i_result	1 = AllOK;
+     * @return int iResult	1 = AllOK;
      */
     public int process() {
         int         iResult;

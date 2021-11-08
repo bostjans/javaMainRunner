@@ -1100,15 +1100,14 @@ public class MainRunBase extends ProcessCore {
         int         iResult;
         //
         long        iCountDataAll = 0L;
+        long        dtStartLoop;
         Date        dtStart;
-        Date        dtStartLoop;
         Date        dtStop;
         ProcessCore.RefDataInteger objRefCountData;
 
         // Initialization
         iResult = ConstGlobal.RETURN_SUCCESS;
         dtStart = new Date();
-        //dtStartLoop = new Date();
         objRefCountData = new ProcessCore.RefDataInteger();
         if (GlobalVar.bIsModeVerbose) {
             logger.info("runInLoop(): =-> Start running in Loop - iMaxNumOfLoops: " + iMaxNumOfLoops + " --==");
@@ -1122,7 +1121,7 @@ public class MainRunBase extends ProcessCore {
                 int     iResultTemp;
                 String  sTemp;
 
-                dtStartLoop = new Date();
+                dtStartLoop = System.currentTimeMillis();
 
                 if (GlobalVar.bIsModeVerbose) {
                     logger.info("runInLoop(): =-> Loop count: " + objRefCountData.iCountLoop + " ---===");
@@ -1142,6 +1141,8 @@ public class MainRunBase extends ProcessCore {
                 iCountDataAll += objRefCountData.iCountData;
 
                 objRefCountData.iCountLoop++;
+                if (iWriteLoopInfoFrequency > 0)
+                    objRefCountData.iCountLoopFreq++;
                 if (iMaxNumOfLoops > 0) {
                     if (iMaxNumOfLoops <= (objRefCountData.iCountLoop - 0)) {
                         logger.info("runInLoop(): Maximum number of loops reached: " + iMaxNumOfLoops);
@@ -1152,22 +1153,33 @@ public class MainRunBase extends ProcessCore {
                 // Check previous step
                 if (iResult == ConstGlobal.RETURN_OK) {
                     if (iMaxNumOfLoops != 1L) {
-                        StringBuilder   sSleep = new StringBuilder();
-                        Date            dtStopLoop = new Date();
+                        boolean         bShouldWriteLoopInfo = false;
+                        long            dtStopLoop = System.currentTimeMillis();
 
-                        if (UtilString.isEmptyTrim(GlobalVar.getInstance().sProgName)) {
-                            sSleep.append("runInLoop()");
-                        } else {
-                            sSleep.append(String.format("%22.22s", GlobalVar.getInstance().sProgName));
+                        if (iWriteLoopInfoFrequency > 0) {
+                            if (objRefCountData.iCountLoopFreq >= iWriteLoopInfoFrequency) {
+                                bShouldWriteLoopInfo = true;
+                                objRefCountData.iCountLoopFreq = 0;
+                            }
+                        } else
+                            bShouldWriteLoopInfo = true;
+                        if (bShouldWriteLoopInfo) {
+                            StringBuilder   sSleep = new StringBuilder();
+
+                            if (UtilString.isEmptyTrim(GlobalVar.getInstance().sProgName)) {
+                                sSleep.append("runInLoop()");
+                            } else {
+                                sSleep.append(String.format("%22.22s", GlobalVar.getInstance().sProgName));
+                            }
+                            sSleep.append(": Sleep ..");
+                            sSleep.append(" -> #Loop: ").append(String.format("%05d", objRefCountData.iCountLoop));
+                            sSleep.append("\tTime: ").append(UtilDate.toUniversalString(new Date(dtStopLoop)));
+                            sSleep.append("\tElapse(ms): ").append(String.format("%05d", dtStopLoop - dtStartLoop));
+                            if (bShouldWriteLoopInfo2stdOut)
+                                System.out.println(sSleep.toString());
+                            if (bShouldWriteLoopInfo2log)
+                                logger.info("runInLoop(): " + sSleep.toString());
                         }
-                        sSleep.append(": Sleep ..");
-                        sSleep.append(" -> #Loop: ").append(String.format("%05d", objRefCountData.iCountLoop));
-                        sSleep.append("\tTime: ").append(UtilDate.toUniversalString(dtStopLoop));
-                        sSleep.append("\tElapse(ms): ").append(String.format("%05d", dtStopLoop.getTime() - dtStartLoop.getTime()));
-                        if (bShouldWriteLoopInfo2stdOut)
-                            System.out.println(sSleep.toString());
-                        if (bShouldWriteLoopInfo2log)
-                            logger.info("runInLoop(): " + sSleep.toString());
                         if (iPauseBetweenLoop != 0) {
                             try { // Pause for ? second(s)
                                 Thread.sleep(iPauseBetweenLoop);
