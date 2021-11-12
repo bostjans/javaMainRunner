@@ -23,8 +23,6 @@ public class ProcessBase extends ProcessCore {
      */
 //    public boolean bIsProcessInLoop = false;
 //    protected long iMaxNumOfLoops = 1;
-//    protected int  iPauseBetweenLoop = 1000 * 2;    // 2 sec .. is default;
-//    protected int  iPauseAtStart = 0;               // Pause before (actual) start processing;
 
     public long    iTimeElapsedStopLimit = 0;
     //long    iTimeElapsedStopLimit = 1000 * 60;          // 1 min
@@ -252,27 +250,16 @@ public class ProcessBase extends ProcessCore {
                 // Check previous step
                 if (iResult == ConstGlobal.RETURN_OK) {
                     if (iMaxNumOfLoops != 1L) {
-                        StringBuilder   sSleep = new StringBuilder();
                         Date            dtStopLoop = new Date();
 
-                        if (objRefCountData.iCountLoop % 10 == 0) {
-                            sSleep.append("-.-\n");
+                        if (bShouldWriteLoopInfo2stdOut) {
+                            if (objRefCountData.iCountLoop % 10 == 0)
+                                System.out.println("-.-");
+                            System.out.println(loopInfoText(sProcessName, "%12.12s", -1, objRefCountData.iCountLoop, dtStartLoop.getTime(), dtStopLoop.getTime(), bShouldWait));
                         }
-                        if (UtilString.isEmptyTrim(sProcessName)) {
-                            sSleep.append("processInLoop()");
-                        } else {
-                            sSleep.append(String.format("%12.12s", sProcessName));
-                        }
-                        sSleep.append(": Sleep ..");
-                        sSleep.append(" -> #Loop: ").append(String.format("%05d", objRefCountData.iCountLoop));
-                        sSleep.append("\tTime: ").append(UtilDate.toUniversalString(dtStopLoop));
-                        sSleep.append("\tElapse(ms): ").append(String.format("%05d", dtStopLoop.getTime() - dtStartLoop.getTime()));
-                        //sSleep.append("\tshouldStop: ").append(bShouldStop);
-                        sSleep.append("\tshouldWait: ").append(bShouldWait);
-                        if (bShouldWriteLoopInfo2stdOut)
-                            System.out.println(sSleep.toString());
                         if (bShouldWriteLoopInfo2log)
-                            logger.info("processInLoop(" + sProcessName + "): " + sSleep.toString());
+                            logger.info("processInLoop(" + sProcessName + "): "
+                                    + loopInfoText(sProcessName, "%12.12s", -1, objRefCountData.iCountLoop, dtStartLoop.getTime(), dtStopLoop.getTime(), bShouldWait));
                         if ((iPauseBetweenLoop != 0) && (!bShouldWait)) {
                             iResult = UtilCommon.sleepFoxMillis(iPauseBetweenLoop);   // Pause for ? second(s)
                         }

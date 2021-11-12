@@ -1,6 +1,13 @@
 package com.stupica.processRunner;
 
 
+import com.stupica.GlobalVar;
+import com.stupica.core.UtilDate;
+import com.stupica.core.UtilString;
+
+import java.util.Date;
+
+
 public class ProcessCore {
 
     /**
@@ -45,5 +52,36 @@ public class ProcessCore {
     }
     public void setPauseBetweenLoop(int aiVal) {
         iPauseBetweenLoop = aiVal;
+    }
+
+    protected String loopInfoText(String asProcName, String asFormat, int aiInstanceNum, long aiCountLoop,
+                                  long adtStartLoop, long adtStopLoop, boolean abShouldWait) {
+        String  sResult;
+
+        sResult = loopInfoText(asProcName, asFormat, aiInstanceNum, aiCountLoop, adtStartLoop, adtStopLoop);
+        sResult += " >shouldWait: " + abShouldWait;
+        return sResult;
+    }
+    protected String loopInfoText(String asProcName, String asFormat, int aiInstanceNum, long aiCountLoop, long adtStartLoop, long adtStopLoop) {
+        StringBuilder   sSleep = new StringBuilder();
+
+        if (UtilString.isEmptyTrim(asProcName))
+            sSleep.append("runInLoop()");
+        else
+            sSleep.append(String.format(asFormat, asProcName));
+        if (aiInstanceNum >= 0)
+            sSleep.append(":").append(String.format("%2d", aiInstanceNum));
+        sSleep.append(" ->Loop#: ").append(String.format("%05d", aiCountLoop));
+        sSleep.append(" >Time: ").append(UtilDate.toUniversalString(new Date(adtStopLoop)));
+        sSleep.append(" >Elapse(ms): ").append(String.format("%05d", adtStopLoop - adtStartLoop));
+        sSleep.append(" &Sleep ..");
+        return sSleep.toString();
+    }
+    protected String loopInfoText(int aiInstanceNum, long aiCountLoop, long adtStartLoop, long adtStopLoop) {
+        if (UtilString.isEmptyTrim(GlobalVar.getInstance().sProgName)) {
+            return loopInfoText("runInLoop()", "%22.22s", aiInstanceNum, aiCountLoop, adtStartLoop, adtStopLoop);
+        } else {
+            return loopInfoText(GlobalVar.getInstance().sProgName, "%22.22s", aiInstanceNum, aiCountLoop, adtStartLoop, adtStopLoop);
+        }
     }
 }
