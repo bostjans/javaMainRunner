@@ -4,8 +4,6 @@ package com.stupica.processRunner;
 import com.stupica.ConstGlobal;
 import com.stupica.GlobalVar;
 import com.stupica.core.UtilCommon;
-import com.stupica.core.UtilDate;
-import com.stupica.core.UtilString;
 
 import java.util.Date;
 import java.util.logging.Logger;
