@@ -369,7 +369,7 @@ public class MainRunBase extends ProcessCore {
                 asMsg.append(" => ").append("PID: ").append(getProcessPID());
                 asMsg.append("; Dir.: ").append(asDirPid);
                 asMsg.append("\n\tMsg.: ").append(ex.getMessage());
-                logger.severe(asMsg.toString());
+                logger.warning(asMsg.toString());
             }
         }
         if (objPidFile != null) {

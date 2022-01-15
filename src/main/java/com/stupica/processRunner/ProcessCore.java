@@ -15,13 +15,13 @@ public class ProcessCore {
      */
     public boolean bIsProcessInLoop = false;
     protected long iMaxNumOfLoops = 1;
-    protected int  iPauseBetweenLoop = 1000 * 2;    // 2 sec .. is default;
+    protected int  iPauseBetweenLoop = 1000 * 4;    // 4 sec .. is default;
     protected int  iPauseAtStart = 0;               // Pause before (actual) start processing;
 
     /**
      * Flag: should write loop information to StdOut?
      * Sample:
-     *    programName: Sleep .. -> #Loop: 02456        Time: 2019-11-21_23:49:20       Elapse(ms): 02648
+     *    programName: 1 ->Loop#: 07684 >Time: 2022-01-15_10:50:51 >Elapse(ms): 11444 &Sleep ..
      */
     protected boolean bShouldWriteLoopInfo2stdOut = true;
     /**

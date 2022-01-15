@@ -16,15 +16,7 @@ public class ProcessBase extends ProcessCore {
     public boolean  bIsInThread = true;
     public boolean  bIsThreadDone = false;
 
-    /**
-     * Flag: is program/process running in loops?
-     */
-//    public boolean bIsProcessInLoop = false;
-//    protected long iMaxNumOfLoops = 1;
-
     public long    iTimeElapsedStopLimit = 0;
-    //long    iTimeElapsedStopLimit = 1000 * 60;          // 1 min
-    //long    iTimeElapsedStopLimit = 1000 * 60 * 60;     // 1 hour
 
     public String   sProcessName = "ProcX";
 
@@ -139,7 +131,7 @@ public class ProcessBase extends ProcessCore {
      *
      * ..
      *
-     * @return int i_result	1 = AllOK;
+     * @return int iResult	1 = AllOK;
      */
     public int processBefore() {
         int         iResult;
@@ -154,7 +146,7 @@ public class ProcessBase extends ProcessCore {
      *
      * ..
      *
-     * @return int i_result	1 = AllOK;
+     * @return int iResult	1 = AllOK;
      */
     public int processAfter() {
         int         iResult;
@@ -178,8 +170,8 @@ public class ProcessBase extends ProcessCore {
         //
         long        iCountDataAll = 0L;
         Date        dtStart;
-        Date        dtStartLoop;
-        Date        dtStop;
+        long        dtStartLoop;
+        long        dtStop;
         ProcessCore.RefDataInteger objRefCountData;
 
         // Initialization
@@ -200,7 +192,7 @@ public class ProcessBase extends ProcessCore {
                 int     iResultTemp;
                 String  sTemp;
 
-                dtStartLoop = new Date();
+                dtStartLoop = System.currentTimeMillis();
 
                 if (GlobalVar.bIsModeVerbose) {
                     logger.info("processInLoop(" + sProcessName + "): =-> Loop count: " + objRefCountData.iCountLoop + " ---===");
@@ -248,16 +240,16 @@ public class ProcessBase extends ProcessCore {
                 // Check previous step
                 if (iResult == ConstGlobal.RETURN_OK) {
                     if (iMaxNumOfLoops != 1L) {
-                        Date            dtStopLoop = new Date();
+                        long    dtStopLoop = System.currentTimeMillis();
 
                         if (bShouldWriteLoopInfo2stdOut) {
                             if (objRefCountData.iCountLoop % 10 == 0)
                                 System.out.println("-.-");
-                            System.out.println(loopInfoText(sProcessName, "%12.12s", -1, objRefCountData.iCountLoop, dtStartLoop.getTime(), dtStopLoop.getTime(), bShouldWait));
+                            System.out.println(loopInfoText(sProcessName, "%12.12s", -1, objRefCountData.iCountLoop, dtStartLoop, dtStopLoop, bShouldWait));
                         }
                         if (bShouldWriteLoopInfo2log)
                             logger.info("processInLoop(" + sProcessName + "): "
-                                    + loopInfoText(sProcessName, "%12.12s", -1, objRefCountData.iCountLoop, dtStartLoop.getTime(), dtStopLoop.getTime(), bShouldWait));
+                                    + loopInfoText(sProcessName, "%12.12s", -1, objRefCountData.iCountLoop, dtStartLoop, dtStopLoop, bShouldWait));
                         if ((iPauseBetweenLoop != 0) && (!bShouldWait)) {
                             iResult = UtilCommon.sleepFoxMillis(iPauseBetweenLoop);   // Pause for ? second(s)
                         }
@@ -285,11 +277,11 @@ public class ProcessBase extends ProcessCore {
             } while ((iResult == ConstGlobal.RETURN_OK) && (!bShouldStop));
         }
 
-        dtStop = new Date();
+        dtStop = System.currentTimeMillis();
         logger.info("processInLoop(" + sProcessName + "): Processing done."
                 + "\n\tData num.: " + objRefCountData.iCountData + "/" + iCountDataAll
                 + "\tLoop#: " + objRefCountData.iCountLoop
-                + "\t\tDuration(ms): " + (dtStop.getTime() - dtStart.getTime()));
+                + "\t\tDuration(ms): " + (dtStop - dtStart.getTime()));
         return iResult;
     }
 
@@ -330,14 +322,14 @@ public class ProcessBase extends ProcessCore {
 
 
     protected boolean checkTimeElapsedStopLimit(Date adtStart) {
-        long        iTimeElapsed = 0L;
-        Date        dtStop;
+        long        iTimeElapsed;
+        long        dtStop;
 
         if (iTimeElapsedStopLimit != 0) {
-            dtStop = new Date();
-            iTimeElapsed = dtStop.getTime() - adtStart.getTime();
+            dtStop = System.currentTimeMillis();
+            iTimeElapsed = dtStop - adtStart.getTime();
             if (iTimeElapsed > iTimeElapsedStopLimit) {
-                logger.warning("checkTimeElapsedStopLimit(" + sProcessName + "): Stop Time limit reached!"
+                logger.info("checkTimeElapsedStopLimit(" + sProcessName + "): Stop Time limit reached!"
                         + " iTimeElapsedStopLimit: " + iTimeElapsedStopLimit);
                 bShouldStop = true;
             }
