@@ -236,8 +236,6 @@ public class MainRunBase extends ProcessCore {
      * ..
      */
     protected void mainStart() {
-        //String          sProgName;
-
         if (GlobalVar.bIsModeTest) {
             if (logger != null) {
                 logger.setLevel(Level.FINE);
@@ -523,7 +521,7 @@ public class MainRunBase extends ProcessCore {
                 sTemp = System.getenv(sConfPathEnv);
                 if (UtilString.isEmpty(sTemp)) {
                     logger.warning("readConfig(): Env. variable: " + sConfPathEnv
-                            + " > could NOT be retrieved! Continuing ..");
+                            + " > could NOT be retrieved! Continue ..");
                 } else {
                     sFileConf = sTemp + File.separator + DEFINE_CONF_FILENAME;
                 }
@@ -539,7 +537,7 @@ public class MainRunBase extends ProcessCore {
                 sTemp = System.getProperties().getProperty(sConfJavaPathEnv);
                 if (UtilString.isEmpty(sTemp)) {
                     logger.warning("readConfig(): (Java) Property variable: " + sConfJavaPathEnv
-                            + " > could NOT be retrieved! Continuing ..");
+                            + " > could NOT be retrieved! Continue ..");
                 } else {
                     sFileConf = sTemp + File.separator + DEFINE_CONF_FILENAME;
                 }
@@ -757,11 +755,7 @@ public class MainRunBase extends ProcessCore {
      */
     public int invokeApp(String arrArgs[]) {
         // Local variables
-        //int         iResult;
         boolean     bIsRunBeforeCalled = false;
-
-        // Initialization
-        //iResult = ConstGlobal.PROCESS_EXIT_SUCCESS;
 
         // Initialize
         initialize();
@@ -795,8 +789,6 @@ public class MainRunBase extends ProcessCore {
                 iResultTemp = readConfig();
                 // Error
                 if (iResultTemp != ConstGlobal.RETURN_OK) {
-                    //sTemp = "invokeApp(): Error at readConfig() operation!"
-                    //        + "\n\tPrepare config file from sample .. as this will be required in future!";
                     sTemp = "invokeApp(): Error at readConfig() operation!";
                     logger.severe(sTemp);
                     msgWarn(sTemp);
@@ -1083,7 +1075,6 @@ public class MainRunBase extends ProcessCore {
     protected int runShutdownHook() {
         bIsShutdownInitiated = true;
         msgInfo("runShutdownHook(00): Shutdown initiated ..  -  ReturnCode: " + iReturnCode);
-        //bIsShutdownReady2Stop = true;
         return ConstGlobal.RETURN_OK;
     }
 
@@ -1102,13 +1093,10 @@ public class MainRunBase extends ProcessCore {
         long        iCountDataAll = 0L;
         long        dtStartLoop;
         long        dtStart, dtStop;
-        //Date        dtStart;
-        //Date        dtStop;
         ProcessCore.RefDataInteger objRefCountData;
 
         // Initialization
         iResult = ConstGlobal.RETURN_SUCCESS;
-        //dtStart = new Date();
         dtStart = System.currentTimeMillis();
         objRefCountData = new ProcessCore.RefDataInteger();
         if (GlobalVar.bIsModeVerbose) {
@@ -1185,7 +1173,6 @@ public class MainRunBase extends ProcessCore {
             } while (iResult == ConstGlobal.RETURN_OK);
         }
 
-        //dtStop = new Date();
         dtStop = System.currentTimeMillis();
         logger.info("runInLoop(): Processing done."
                 + "\n\tData num.: " + objRefCountData.iCountData + "/" + iCountDataAll

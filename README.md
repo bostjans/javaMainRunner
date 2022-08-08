@@ -36,3 +36,17 @@ It offers:
             System.exit(iReturnCode);
     }
 ```
+
+
+# ToDo
+
+* write sample(s)
+* prepare run script (run.sh)
+* prepare "watchDog" script (processCheck.sh)
+  * check for PID in: /var/run/ -> /var/tmp/
+
+
+# Other
+
+* https://github.com/melin/java-main-runner
+* https://github.com/moditect/layrry
