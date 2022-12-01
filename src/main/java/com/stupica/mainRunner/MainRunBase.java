@@ -522,6 +522,8 @@ public class MainRunBase extends ProcessCore {
                 if (UtilString.isEmpty(sTemp)) {
                     logger.warning("readConfig(): Env. variable: " + sConfPathEnv
                             + " > could NOT be retrieved! Continue ..");
+                } else if ((sTemp.toLowerCase().endsWith(".prop")) || (sTemp.toLowerCase().endsWith(".properties"))) {
+                    sFileConf = sTemp;
                 } else {
                     sFileConf = sTemp + File.separator + DEFINE_CONF_FILENAME;
                 }
@@ -538,6 +540,8 @@ public class MainRunBase extends ProcessCore {
                 if (UtilString.isEmpty(sTemp)) {
                     logger.warning("readConfig(): (Java) Property variable: " + sConfJavaPathEnv
                             + " > could NOT be retrieved! Continue ..");
+                } else if ((sTemp.toLowerCase().endsWith(".prop")) || (sTemp.toLowerCase().endsWith(".properties"))) {
+                    sFileConf = sTemp;
                 } else {
                     sFileConf = sTemp + File.separator + DEFINE_CONF_FILENAME;
                 }
