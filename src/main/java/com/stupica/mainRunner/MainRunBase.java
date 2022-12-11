@@ -444,7 +444,6 @@ public class MainRunBase extends ProcessCore {
         // Display program info
         System.out.println();
         msgInfo("Program: " + GlobalVar.getInstance().sProgName);
-        //System.out.println("Version: " + GlobalVar.getInstance().get_version());
         msgWarn("Version: " + GlobalVar.getInstance().get_version());
         msgInfo("Made by: " + GlobalVar.getInstance().sAuthor);
         System.out.println("===");
@@ -613,6 +612,9 @@ public class MainRunBase extends ProcessCore {
         String      sTemp = null;
         Manifest    mf = null;
         Attributes  atts = null;
+        URL         objResource = null;
+        URL         objResourceFirst = null;
+        URL         objResourceFound = null;
         Enumeration<URL>    resources = null;
 
         // Initialization
@@ -629,27 +631,55 @@ public class MainRunBase extends ProcessCore {
 
         // Check previous step
         if (iResult == ConstGlobal.RETURN_OK) {
-            //System.out.println("Resource output for MANIFEST .. :");
+            if (GlobalVar.bIsModeVerbose) {
+                //System.out.println("Resource output for MANIFEST .. :");
+                logger.config("Resource output for MANIFEST .. : "
+                    + "looking resource with name: " + GlobalVar.getInstance().sProgName.toLowerCase());
+            }
             while (resources.hasMoreElements()) {
-                URL objResource = resources.nextElement();
-                try {
+                objResource = resources.nextElement();
+                if (objResourceFirst == null)
+                    objResourceFirst = objResource;
+
+                if (GlobalVar.bIsModeVerbose) {
                     //System.out.println(objResource);
-                    // check that this is your manifest and do what you need or get the next one
-                    if (       (objResource.toString().toLowerCase().contains("intellij"))
-                            && (objResource.toString().toLowerCase().contains("idea")) ) {
-                        bIsDevEnv = true;
-                        break;
-                    }
-                    if (       (objResource.toString().toLowerCase().contains(GlobalVar.getInstance().sProgName.toLowerCase())) ) {
-                        mf = new Manifest(objResource.openStream());
-                        break;
-                    }
-                } catch (IOException ex) {
-                    iResult = ConstGlobal.RETURN_ERROR;
-                    System.err.println("Error reading Manifest: " + objResource
-                            + "; Msg.: " + ex.getMessage());
+                    logger.config(objResource.toString());
+                }
+                // check that this is your manifest and do what you need or get the next one
+                if (       (objResource.toString().toLowerCase().contains("intellij"))
+                        && (objResource.toString().toLowerCase().contains("idea")) ) {
+                    bIsDevEnv = true;
                     break;
                 }
+                if (       (objResource.toString().toLowerCase().contains(GlobalVar.getInstance().sProgName.toLowerCase())) ) {
+                    objResourceFound = objResource;
+                    if (GlobalVar.bIsModeVerbose) {
+                        logger.config(".. resource with programName found: " + objResource);
+                    }
+                    break;
+                }
+            }
+            if (objResourceFound == null) {
+                if (GlobalVar.bIsModeVerbose)
+                    logger.config(".. no Manifest found for programName: " + GlobalVar.getInstance().sProgName
+                            + "; using first Resource ..");
+                if (!bIsDevEnv)
+                    objResourceFound = objResourceFirst;
+            }
+        }
+        if (objResourceFound == null) {
+            if (GlobalVar.bIsModeVerbose)
+                logger.info(".. no Manifest found for programName: " + GlobalVar.getInstance().sProgName
+                        + "! IsDEV_env: " + bIsDevEnv);
+        } else {
+            try {
+                mf = new Manifest(objResourceFound.openStream());
+            } catch (IOException e) {
+                iResult = ConstGlobal.RETURN_ERROR;
+                System.err.println("Error reading Manifest: " + objResource
+                        + "; Msg.: " + e.getMessage());
+                logger.severe("Error reading Manifest: " + objResource
+                        + "; Msg.: " + e.getMessage());
             }
         }
 
@@ -669,14 +699,20 @@ public class MainRunBase extends ProcessCore {
             }
         }
         if (UtilString.isEmpty(sTemp)) sTemp = "/";
-        //System.out.println("\tVersion text extracted: " + sTemp);
+        if (GlobalVar.bIsModeVerbose) {
+            //System.out.println("\tVersion text extracted: " + sTemp);
+            logger.config("\tVersion text extracted: " + sTemp);
+        }
         if (sTemp.contains(":")) {
             String[] arrVersion = sTemp.split(":");
             sTemp = arrVersion[arrVersion.length - 1];
         }
         if (sTemp.contains(".")) {
             String[] arrVersion = sTemp.split("\\.");
-            //System.out.println("\tVersion num extracted: " + arrVersion.length);
+            if (GlobalVar.bIsModeVerbose) {
+                //System.out.println("\tVersion num extracted: " + arrVersion.length);
+                logger.config("\tVersion num extracted: " + arrVersion.length);
+            }
             GlobalVar.getInstance().sVersionMax = arrVersion[0];
             if (arrVersion.length > 0) GlobalVar.getInstance().sVersionMin = arrVersion[1].trim();
             if (arrVersion.length > 1) GlobalVar.getInstance().sVersionPatch = arrVersion[2].trim();
