@@ -293,15 +293,6 @@ public class MainRunBase extends ProcessCore {
             if (UtilString.isEmptyTrim(GlobalVar.getInstance().sProgName)) sProgName = "programNA";
             else                                                           sProgName = GlobalVar.getInstance().sProgName;
             objFileLock = createLockFile(sProgName, System.getProperty("java.io.tmpdir"), iInstanceNum, sMsg);
-//            if (objFileLock == null) {
-//                objFileLock = createLockFile(sProgName, sDirLock01, sMsg);
-//            }
-//            if (objFileLock == null) {
-//                objFileLock = createLockFile(sProgName, sDirLock02, sMsg);
-//            }
-//            if (objFileLock == null) {
-//                objFileLock = createLockFile(sProgName, System.getProperty("user.dir"), sMsg);
-//            }
             if (objFileLock == null) {
                 if (bLockFileExists) {
                     if (bLockFileAllowMoreInstance) {
@@ -907,23 +898,6 @@ public class MainRunBase extends ProcessCore {
         if (bShouldEnableShutdownHook) {
             objMainShutdownHook = new MainShutdownHookThread();
             objMainShutdownHook.setName("ShutdownHook-" + getProcessPID());
-//            Runtime.getRuntime().addShutdownHook(new Thread() {
-//                public void run() {
-//                    int     iResultTemp;
-//                    String  sTemp;
-//
-//                    iResultTemp = runShutdownHook();
-//                    // Error
-//                    if (iResultTemp != ConstGlobal.RETURN_OK) {
-//                        sTemp = "invokeApp(): Error at runShutdownHook() operation!";
-//                        logger.severe(sTemp);
-//                        msgWarn(sTemp);
-//                    }
-//                    iReturnCode = ConstGlobal.PROCESS_EXIT_SIGINT;
-//                    msgInfo("invokeApp(Thread): Shouting down (final) ..  -  ReturnCode: " + iReturnCode);
-//                    //System.exit(iReturnCode);
-//                }
-//            });
             Runtime.getRuntime().addShutdownHook(objMainShutdownHook);
         }
 
