@@ -29,6 +29,10 @@ public class ProcessCore {
      */
     protected boolean bShouldWriteLoopInfo2log = false;
     /**
+     * Flag: should write loop information to (specific) file?
+     */
+    protected boolean bShouldWriteLoopInfo2file = false;
+    /**
      * Frequency for "write loop info"
      */
     protected int iWriteLoopInfoFrequency = 1;

@@ -4,6 +4,7 @@ package com.stupica.mainRunner;
 import com.stupica.ConstGlobal;
 import com.stupica.GlobalVar;
 import com.stupica.core.UtilDate;
+import com.stupica.core.UtilFile;
 import com.stupica.core.UtilString;
 
 import com.stupica.processRunner.ProcessCore;
@@ -17,6 +18,8 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static com.stupica.ConstGlobal.DEFINE_STR_NEWLINE;
 
 
 /**
@@ -1107,6 +1110,8 @@ public class MainRunBase extends ProcessCore {
         long        iCountDataAll = 0L;
         long        dtStartLoop;
         long        dtStart, dtStop;
+        String      sFileNameInfoDir = System.getProperty("user.home") + File.separator + ".local/log";
+        String      sFileNameInfo = sFileNameInfoDir + File.separator + GlobalVar.getInstance().sProgName + ".log";
         ProcessCore.RefDataInteger objRefCountData;
 
         // Initialization
@@ -1115,6 +1120,15 @@ public class MainRunBase extends ProcessCore {
         objRefCountData = new ProcessCore.RefDataInteger();
         if (GlobalVar.bIsModeVerbose) {
             logger.info("runInLoop(): =-> Start running in Loop - iMaxNumOfLoops: " + iMaxNumOfLoops + " --==");
+        }
+
+        // Check if info logging to file is enabled
+        if (bShouldWriteLoopInfo2file) {
+            File objFileLoc = new File(sFileNameInfoDir);
+            if (!objFileLoc.exists()) {
+                bShouldWriteLoopInfo2file = false;
+                logger.warning("runInLoop(): ! LogDir. for info. output does NOT exists! LogDir.: " + objFileLoc.getAbsolutePath());
+            }
         }
 
         // Process data ..
@@ -1168,10 +1182,13 @@ public class MainRunBase extends ProcessCore {
                         } else
                             bShouldWriteLoopInfo = true;
                         if (bShouldWriteLoopInfo) {
+                            sTemp = loopInfoText(iInstanceNum, objRefCountData.iCountLoop, dtStartLoop, dtStopLoop);
                             if (bShouldWriteLoopInfo2stdOut)
-                                System.out.println(loopInfoText(iInstanceNum, objRefCountData.iCountLoop, dtStartLoop, dtStopLoop));
+                                System.out.println(sTemp);
                             if (bShouldWriteLoopInfo2log)
-                                logger.info("runInLoop(): " + loopInfoText(iInstanceNum, objRefCountData.iCountLoop, dtStartLoop, dtStopLoop));
+                                logger.info("runInLoop(): " + sTemp);
+                            if (bShouldWriteLoopInfo2file)
+                                UtilFile.writeStringAppend(sFileNameInfo, DEFINE_STR_NEWLINE + sTemp);
                         }
                         if (iPauseBetweenLoop != 0) {
                             try { // Pause for ? second(s)
