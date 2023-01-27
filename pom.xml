@@ -14,6 +14,13 @@
     </organization>
     <url>http://developer.stupica.com/maven/</url>
 
+    <properties>
+        <java-version>1.8</java-version>
+        <!-- Need Java 1.8, because of library: .. -->
+        <maven.compiler.source>${java-version}</maven.compiler.source>
+        <maven.compiler.target>${java-version}</maven.compiler.target>
+    </properties>
+
     <!-- library dependencies -->
     <dependencies>
         <dependency>
