@@ -25,7 +25,7 @@ It offers:
     public static void main(String[] a_args) {
         // Initialization
         GlobalVar.getInstance().sProgName = "programShell";
-        GlobalVar.getInstance().sVersionBuild = "225";
+        GlobalVar.getInstance().sVersionBuild = "2..";
 
         // Generate main program class
         objInstance = new MainRun();
