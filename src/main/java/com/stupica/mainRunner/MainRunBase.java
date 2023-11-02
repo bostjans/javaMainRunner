@@ -438,7 +438,7 @@ public class MainRunBase extends ProcessCore {
         // Display program info
         System.out.println();
         msgInfo("Program: " + GlobalVar.getInstance().sProgName);
-        msgWarn("Version: " + GlobalVar.getInstance().get_version());
+        msgInfo("Version: " + GlobalVar.getInstance().get_version());
         msgInfo("Made by: " + GlobalVar.getInstance().sAuthor);
         System.out.println("===");
     }
@@ -915,7 +915,8 @@ public class MainRunBase extends ProcessCore {
                 if (iResultTemp != ConstGlobal.RETURN_OK) {
                     if (iReturnCode == ConstGlobal.PROCESS_EXIT_SUCCESS)
                         iReturnCode = ConstGlobal.PROCESS_EXIT_FAILURE;
-                    sTemp = "invokeApp(): Error at runBefore() operation! iReturnCode: " + iReturnCode;
+                    sTemp = "invokeApp(): Error at runBefore() operation! iResult: " + iResultTemp
+                            + "; iReturnCode: " + iReturnCode;
                     logger.severe(sTemp);
                     msgErr(sTemp);
                 }
@@ -928,7 +929,8 @@ public class MainRunBase extends ProcessCore {
                 if (iResultTemp != ConstGlobal.RETURN_OK) {
                     if (iReturnCode == ConstGlobal.PROCESS_EXIT_SUCCESS)
                         iReturnCode = ConstGlobal.PROCESS_EXIT_FAILURE;
-                    sTemp = "invokeApp(): Error at run() operation! iReturnCode: " + iReturnCode;
+                    sTemp = "invokeApp(): Error at run() operation! iResult: " + iResultTemp
+                            + "; iReturnCode: " + iReturnCode;
                     logger.severe(sTemp);
                     msgErr(sTemp);
                 }
@@ -940,7 +942,8 @@ public class MainRunBase extends ProcessCore {
                 if (iResultTemp != ConstGlobal.RETURN_OK) {
                     if (iReturnCode == ConstGlobal.PROCESS_EXIT_SUCCESS)
                         iReturnCode = ConstGlobal.PROCESS_EXIT_FAILURE;
-                    sTemp = "invokeApp(): Error at runAfter() operation! iReturnCode: " + iReturnCode;
+                    sTemp = "invokeApp(): Error at runAfter() operation! iResult: " + iResultTemp
+                            + "; iReturnCode: " + iReturnCode;
                     logger.severe(sTemp);
                     msgErr(sTemp);
                 }

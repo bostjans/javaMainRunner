@@ -1,0 +1,20 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="MainRunBaseTestLog" type="JUnit" factoryName="JUnit" nameIsGenerated="true">
+    <module name="mainRunner" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="com.stupica.mainRunner.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <option name="PACKAGE_NAME" value="com.stupica.mainRunner" />
+    <option name="MAIN_CLASS_NAME" value="com.stupica.mainRunner.MainRunBaseTestLog" />
+    <option name="METHOD_NAME" value="" />
+    <option name="TEST_OBJECT" value="class" />
+    <option name="VM_PARAMETERS" value="-ea -Djava.util.logging.config.file=$MODULE_DIR$/target/test-classes/logging.properties" />
+    <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

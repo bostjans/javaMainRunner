@@ -5,7 +5,7 @@
     <!-- project coordinates .. -->
     <groupId>com.stupica.base</groupId>
     <artifactId>mainRunner</artifactId>
-    <version>1.6.1</version>
+    <version>1.6.2</version>
     <packaging>jar</packaging>
     <name>mainRunner</name>
     <organization>
@@ -15,10 +15,12 @@
     <url>http://developer.stupica.com/maven/</url>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java-version>1.8</java-version>
         <!-- Need Java 1.8, because of library: .. -->
         <maven.compiler.source>${java-version}</maven.compiler.source>
         <maven.compiler.target>${java-version}</maven.compiler.target>
+        <maven.plugin.validation>BRIEF</maven.plugin.validation>
     </properties>
 
     <!-- library dependencies -->
@@ -34,6 +36,20 @@
             <artifactId>globalVar</artifactId>
             <version>[1,2)</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.9.3</version>
+            <scope>test</scope>
+        </dependency>
+        <!--
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-runner</artifactId>
+            <version>1.9.3</version>
+            <scope>test</scope>
+        </dependency> -->
     </dependencies>
 
     <build>
