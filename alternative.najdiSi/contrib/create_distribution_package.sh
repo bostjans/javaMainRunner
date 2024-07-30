@@ -183,8 +183,7 @@ run_it() {
 
 	echo "" >> "$f"
 	echo "# EOF" >> "$f"
-	
-	
+
 	msg_info "Creating tar.bz2 archive."
 	f="${DIST_DIR}/jar-bundle-${PRODUCTION}-`date +%Y%m%d%H%M%S`.tbz"
 	tar cjpf "${f}" * || die "Unable to create tar.bz2 archive."
@@ -197,7 +196,6 @@ run_it() {
 	${MVN} clean >/dev/null 2>&1
 	
 	msg_info "Operation complete. Bundle file written to: ${TERM_LGREEN}${f}${TERM_RESET}"
-	
 	return 0
 }
 

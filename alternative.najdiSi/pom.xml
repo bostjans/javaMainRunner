@@ -76,7 +76,6 @@
 	 </filters>
 	</build>
 
-
 <!--
 		#######################################################
 		#              PROJECT LIBRARY DEPENDENCIES           #
@@ -120,5 +119,4 @@
 	</scm>
 
 </project>
-
 <!-- EOF -->

@@ -604,6 +604,7 @@ public class MainRunBase extends ProcessCore {
         int         iResult;
         boolean     bIsDevEnv = false;
         String      sTemp = null;
+        String      sJarName = null;
         Manifest    mf = null;
         Attributes  atts = null;
         URL         objResource = null;
@@ -622,13 +623,42 @@ public class MainRunBase extends ProcessCore {
         } catch (Exception ex) {
             iResult = ConstGlobal.RETURN_ERROR;
         }
+        // Get JarName > that was run (java -jar XY.jar)
+        // Check previous step
+        if (iResult == ConstGlobal.RETURN_OK) {
+            sJarName = System.getProperty("sun.java.command");
+            if (GlobalVar.bIsModeVerbose)
+                logger.config(".. try to find *.jar name from run Command: " + sJarName);
+            if (!UtilString.isEmpty(sJarName)) {
+                String sJarCommand = null;
+                String sJarCmd[] = sJarName.split("/");
+                sJarName = null;
+                for (String sLoop : sJarCmd) {
+                    if (sLoop.toLowerCase().trim().contains(".jar")) {
+                        sJarCommand = sLoop; break;
+                    }
+                }
+                if (sJarCommand != null) {
+                    String sJarParam[] = sJarCommand.split(" ");
+                    sJarName = sJarParam[0];
+                }
+            }
+        }
+        if (GlobalVar.bIsModeVerbose)
+            logger.config("Identified *.jar name: " + sJarName);
 
         // Check previous step
         if (iResult == ConstGlobal.RETURN_OK) {
             if (GlobalVar.bIsModeVerbose) {
-                //System.out.println("Resource output for MANIFEST .. :");
-                logger.config("Resource output for MANIFEST .. : "
-                    + "looking resource with name: " + GlobalVar.getInstance().sProgName.toLowerCase());
+                sTemp = "Resource output for MANIFEST .. : "
+                        + "looking resource with name: ";
+                if (GlobalVar.getInstance().sProgName == null)
+                    sTemp += "/";
+                else
+                    sTemp += GlobalVar.getInstance().sProgName.toLowerCase();
+                if (sJarName != null)
+                    sTemp += "; or " + sJarName + ";";
+                logger.config(sTemp);
             }
             while (resources.hasMoreElements()) {
                 objResource = resources.nextElement();
@@ -636,20 +666,26 @@ public class MainRunBase extends ProcessCore {
                     objResourceFirst = objResource;
 
                 if (GlobalVar.bIsModeVerbose) {
-                    //System.out.println(objResource);
                     logger.config(objResource.toString());
                 }
-                // check that this is your manifest and do what you need or get the next one
+                // check that this manifest is from IDE run ..
                 if (       (objResource.toString().toLowerCase().contains("intellij"))
                         && (objResource.toString().toLowerCase().contains("idea")) ) {
                     bIsDevEnv = true;
                     break;
                 }
-                if (       (objResource.toString().toLowerCase().contains(GlobalVar.getInstance().sProgName.toLowerCase())) ) {
+                // check that this is your manifest and do what you need or get the next one
+                if (       (GlobalVar.getInstance().sProgName != null)
+                        && (objResource.toString().toLowerCase().contains(GlobalVar.getInstance().sProgName.toLowerCase())) ) {
                     objResourceFound = objResource;
-                    if (GlobalVar.bIsModeVerbose) {
-                        logger.config(".. resource with programName found: " + objResource);
-                    }
+                    if (GlobalVar.bIsModeVerbose)
+                        logger.config(".. resource with programName found (by progName): " + objResource);
+                    break;
+                }
+                if ((sJarName != null) && (objResource.toString().toLowerCase().contains(sJarName.toLowerCase()))) {
+                    objResourceFound = objResource;
+                    if (GlobalVar.bIsModeVerbose)
+                        logger.config(".. resource with programName found (by jarName): " + objResource);
                     break;
                 }
             }

@@ -46,7 +46,16 @@ It offers:
   * check for PID in: /var/run/ -> /var/tmp/
 
 
+# Versions
+
+```
+curl -i http://developer.dev404.net/maven/com/stupica/base/mainRunner/
+curl -i https://developer.dev404.net/maven/com/stupica/base/mainRunner/
+```
+
+
 # Other
 
 * https://github.com/melin/java-main-runner
+* https://github.com/mrcnc/maven-main-runner
 * https://github.com/moditect/layrry

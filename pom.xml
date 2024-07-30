@@ -5,14 +5,14 @@
     <!-- project coordinates .. -->
     <groupId>com.stupica.base</groupId>
     <artifactId>mainRunner</artifactId>
-    <version>1.6.2</version>
+    <version>1.6.3</version>
     <packaging>jar</packaging>
     <name>mainRunner</name>
     <organization>
-        <name>developer.stupica.com</name>
+        <name>Developer404</name>
         <url>http://www.stupica.com</url>
     </organization>
-    <url>http://developer.stupica.com/maven/</url>
+    <url>http://developer.dev404.net/maven</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -40,7 +40,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.9.3</version>
+            <version>5.10.3</version>
             <scope>test</scope>
         </dependency>
         <!--
